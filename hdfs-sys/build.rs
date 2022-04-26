@@ -22,5 +22,11 @@ fn main() -> anyhow::Result<()> {
         bindings.write_to_file(out_path.join(format!("bindings_{}.rs", header)))?;
     }
 
+    println!(
+        "cargo:rustc-link-search=native={}/lib/native",
+        env::var("HADOOP_HOME")?
+    );
+    println!("cargo:rustc-link-lib=hdfs");
+
     Ok(())
 }

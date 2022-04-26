@@ -12,6 +12,7 @@ license = "Apache-2.0"
 [dependencies]
 
 [dev-dependencies]
+libc="0.2.124"
 
 [build-dependencies]
 bindgen = "0.53.1"
