@@ -1,18 +1,18 @@
 [package]
-name = "hdrs"
-version = "0.0.0"
-edition = "2021"
 authors = ["Xuanwo <github@xuanwo.io>"]
 categories = ["command-line-utilities"]
 description = "Rust native client to hdfs"
 documentation = "https://docs.rs/hdrs"
-repository = "https://github.com/Xuanwo/hdrs"
+edition = "2021"
 license = "Apache-2.0"
+name = "hdrs"
+repository = "https://github.com/Xuanwo/hdrs"
+version = "0.0.0"
 
 [dependencies]
+anyhow = "1.0.57"
 hdfs-sys = "0.0.1"
 libc = "0.2.124"
-anyhow = "1.0.57"
 log = "0.4.16"
 
 [dev-dependencies]

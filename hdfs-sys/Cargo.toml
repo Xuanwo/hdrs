@@ -1,16 +1,22 @@
 [package]
-name = "hdfs-sys"
-version = "0.0.3"
-edition = "2021"
 authors = ["Xuanwo <github@xuanwo.io>"]
 categories = ["command-line-utilities"]
 description = "Bindings to hdfs"
 documentation = "https://docs.rs/hdfs-sys"
-repository = "https://github.com/Xuanwo/hdrs"
+edition = "2021"
+include = [
+  "build.rs",
+  "/src",
+  "/vendor/include",
+  "/vendor/hadoop/hadoop-hdfs-project/hadoop-hdfs-native-client/src/main/native/libhdfs/",
+]
 license = "Apache-2.0"
 links = "hdfs"
+name = "hdfs-sys"
+repository = "https://github.com/Xuanwo/hdrs"
+version = "0.0.3"
 
 [build-dependencies]
-bindgen = "0.53.1"
 anyhow = "1.0.57"
+bindgen = "0.53.1"
 cc = "1.0.73"

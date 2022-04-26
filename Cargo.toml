@@ -1,6 +1,3 @@
 [workspace]
 
-members = [
-    "hdfs-sys",
-    "hdrs"
-]
+members = ["hdfs-sys", "hdrs"]
