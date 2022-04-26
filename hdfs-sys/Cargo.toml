@@ -1,6 +1,6 @@
 [package]
 name = "hdfs-sys"
-version = "0.0.1"
+version = "0.0.2"
 edition = "2021"
 authors = ["Xuanwo <github@xuanwo.io>"]
 categories = ["command-line-utilities"]
@@ -9,12 +9,6 @@ documentation = "https://docs.rs/hdfs-sys"
 repository = "https://github.com/Xuanwo/hdrs"
 license = "Apache-2.0"
 
-[dependencies]
-
-[dev-dependencies]
-libc = "0.2.124"
-
 [build-dependencies]
 bindgen = "0.53.1"
 anyhow = "1.0.57"
-regex = "1.5.5"
