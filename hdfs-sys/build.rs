@@ -21,8 +21,7 @@ fn main() -> Result<()> {
                 .into_string()
                 .expect("file name must be valid")
         })
-        .filter(|v| v.ends_with(&format!("{}.h", hadoop_version.replace(".", "_"))))
-        .next()
+        .find(|v| v.ends_with(&format!("{}.h", hadoop_version.replace('.', "_"))))
         .ok_or_else(|| anyhow!("hadoop version for {} is not supported", hadoop_version))?;
 
     let bindings = bindgen::Builder::default()

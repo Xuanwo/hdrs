@@ -1,6 +1,6 @@
 [package]
 name = "hdfs-sys"
-version = "0.0.0"
+version = "0.0.1"
 edition = "2021"
 authors = ["Xuanwo <github@xuanwo.io>"]
 categories = ["command-line-utilities"]
@@ -12,7 +12,7 @@ license = "Apache-2.0"
 [dependencies]
 
 [dev-dependencies]
-libc="0.2.124"
+libc = "0.2.124"
 
 [build-dependencies]
 bindgen = "0.53.1"
