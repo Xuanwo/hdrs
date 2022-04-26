@@ -5,22 +5,11 @@
 #![allow(deref_nullptr)]
 #![allow(rustdoc::invalid_rust_codeblocks)]
 
-pub mod hdfs_2_10_1 {
-    include!(concat!(env!("OUT_DIR"), "/bindings_hdfs_2_10_1.h.rs"));
-}
-
-pub mod hdfs_3_2_3 {
-    include!(concat!(env!("OUT_DIR"), "/bindings_hdfs_3_2_3.h.rs"));
-}
-
-pub mod hdfs_3_3_2 {
-    include!(concat!(env!("OUT_DIR"), "/bindings_hdfs_3_3_2.h.rs"));
-}
+include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use hdfs_2_10_1::*;
     use libc::{c_char, c_int, c_short, c_void, time_t, O_CREAT, O_RDONLY, O_WRONLY};
     use std::ffi::CString;
 
