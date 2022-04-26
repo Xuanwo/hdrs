@@ -63,13 +63,23 @@ fn without_hadoop_home() -> Result<()> {
     builder.file(format!("{hadoop_src}/hdfs.c"));
     builder.file(format!("{hadoop_src}/jni_helper.c"));
     builder.file(format!("{hadoop_src}/jclasses.c"));
+    if cfg!(windows) {
+        builder.file(format!("{hadoop_src}/os/windows/mutexes.c"));
+        builder.file(format!("{hadoop_src}/os/windows/thread.c"));
+        builder.file(format!("{hadoop_src}/os/windows/thread_local_storage.c"));
+    } else {
+        builder.file(format!("{hadoop_src}/os/posix/mutexes.c"));
+        builder.file(format!("{hadoop_src}/os/posix/thread.c"));
+        builder.file(format!("{hadoop_src}/os/posix/thread_local_storage.c"));
+    }
 
     // Ignore all warnings from libhdfs.
     builder.warnings(false);
+    // builder.static_flag(true);
     // Compile
     builder.compile("hdfs");
 
-    println!("cargo:rustc-link-lib=hdfs");
+    println!("cargo:rustc-link-lib=static=hdfs");
 
     let bindings = bindgen::Builder::default()
         .header(format!("{hadoop_src}/include/hdfs/hdfs.h"))
