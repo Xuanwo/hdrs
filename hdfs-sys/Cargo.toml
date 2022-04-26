@@ -11,7 +11,6 @@ include = [
   "/vendor/hadoop/hadoop-hdfs-project/hadoop-hdfs-native-client/src/main/native/libhdfs/",
 ]
 license = "Apache-2.0"
-links = "hdfs"
 name = "hdfs-sys"
 repository = "https://github.com/Xuanwo/hdrs"
 version = "0.0.3"

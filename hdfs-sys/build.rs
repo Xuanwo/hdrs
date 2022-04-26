@@ -5,6 +5,11 @@ use std::env;
 use std::path::PathBuf;
 
 fn main() -> Result<()> {
+    // Make sure jvm has been linked.
+    let java_home = env::var("JAVA_HOME")?;
+    println!("cargo:rustc-link-search=native={java_home}/lib/server");
+    println!("cargo:rustc-link-lib=jvm");
+
     match env::var("HADOOP_HOME") {
         Ok(hadoop_home) => with_hadoop_home(&hadoop_home),
         Err(_) => without_hadoop_home(),
