@@ -1,3 +1,0 @@
-[submodule "hdfs-sys/vendor/hadoop"]
-	path = hdfs-sys/vendor/hadoop
-	url = git@github.com:apache/hadoop.git
