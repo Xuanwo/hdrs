@@ -10,7 +10,7 @@ repository = "https://github.com/Xuanwo/hdrs"
 version = "0.0.1"
 
 [dependencies]
-hdfs-sys = "0.0.4"
+hdfs-sys = "0.0.5"
 libc = "0.2.124"
 log = "0.4.16"
 
