@@ -3,7 +3,7 @@ use anyhow::anyhow;
 use anyhow::Result;
 use hdfs_sys::*;
 use log::debug;
-use std::io;
+use std::{io, ptr};
 
 #[derive(Debug)]
 pub struct StreamBuilder<'f> {
@@ -45,6 +45,7 @@ impl<'f> StreamBuilder<'f> {
         assert!(!self.b.is_null());
 
         let file = unsafe { hdfsStreamBuilderBuild(self.b) };
+        self.b = ptr::null_mut();
 
         if file.is_null() {
             return Err(anyhow!(
@@ -66,8 +67,8 @@ pub struct File<'f> {
 impl<'f> Drop for File<'f> {
     fn drop(&mut self) {
         unsafe {
-            debug!("File dropped");
             let _ = hdfsCloseFile(self.fs.inner(), self.f);
+            self.f = ptr::null_mut();
         }
     }
 }
@@ -90,7 +91,7 @@ mod tests {
         let fs = Client::connect("default", 0).expect("init success");
 
         let mut f = fs
-            .open("/tmp/hello.txt", libc::O_RDONLY)
+            .open("/tmp/hello.txt", libc::O_CREAT | libc::O_WRONLY)
             .expect("open file success");
 
         let f = f.build().expect("build file success");
