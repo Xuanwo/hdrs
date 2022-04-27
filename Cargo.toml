@@ -11,7 +11,7 @@ version = "0.0.0"
 
 [dependencies]
 anyhow = "1.0.57"
-hdfs-sys = { path = "../hdfs-sys" }
+hdfs-sys = "0.0.4"
 libc = "0.2.124"
 log = "0.4.16"
 
