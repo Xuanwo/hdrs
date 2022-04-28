@@ -149,7 +149,7 @@ mod tests {
 
         let fs = Client::connect("default", 0).expect("init success");
 
-        let path = uuid::Uuid::default().to_string();
+        let path = uuid::Uuid::new_v4().to_string();
 
         let _ = fs
             .open(&format!("/tmp/{path}"), libc::O_RDONLY)
@@ -163,7 +163,7 @@ mod tests {
         let fs = Client::connect("default", 0).expect("init success");
         debug!("Client: {:?}", fs);
 
-        let path = uuid::Uuid::default().to_string();
+        let path = uuid::Uuid::new_v4().to_string();
 
         let f = fs.stat(&format!("/tmp/{path}"));
         assert!(f.is_err());

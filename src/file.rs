@@ -90,7 +90,7 @@ mod tests {
 
         let fs = Client::connect("default", 0).expect("init success");
 
-        let path = uuid::Uuid::default().to_string();
+        let path = uuid::Uuid::new_v4().to_string();
 
         let mut f = fs
             .open(&format!("/tmp/{path}"), libc::O_CREAT | libc::O_WRONLY)
@@ -107,7 +107,7 @@ mod tests {
 
         let fs = Client::connect("default", 0).expect("init success");
 
-        let path = uuid::Uuid::default().to_string();
+        let path = uuid::Uuid::new_v4().to_string();
 
         let mut f = fs
             .open(&format!("/tmp/{path}"), libc::O_CREAT | libc::O_WRONLY)
@@ -127,7 +127,7 @@ mod tests {
 
         let fs = Client::connect("default", 0).expect("init success");
 
-        let path = uuid::Uuid::default().to_string();
+        let path = uuid::Uuid::new_v4().to_string();
 
         let mut f = fs
             .open(&format!("/tmp/{path}"), libc::O_CREAT | libc::O_WRONLY)
