@@ -9,9 +9,8 @@ fn test_connect() -> Result<()> {
     dotenv::from_filename(".env").ok();
 
     let name_node = env::var("HDRS_HDFS_NAMENODE")?;
-    let port = env::var("HDRS_HDFS_PORT")?.parse()?;
 
-    let fs = Client::connect(&name_node, port);
+    let fs = Client::connect(&name_node);
     assert!(fs.is_ok());
 
     Ok(())
@@ -27,12 +26,14 @@ fn test_file() -> Result<()> {
     }
 
     let name_node = env::var("HDRS_HDFS_NAMENODE")?;
-    let port = env::var("HDRS_HDFS_PORT")?.parse()?;
     let work_dir = env::var("HDRS_HDFS_WORKDIR")?;
 
-    let fs = Client::connect(&name_node, port)?;
+    let fs = Client::connect(&name_node)?;
 
-    let path = format!("{}/{}", work_dir, uuid::Uuid::new_v4().to_string());
+    let path = format!(
+        "{name_node}/{work_dir}/{}",
+        uuid::Uuid::new_v4().to_string()
+    );
 
     let mut rng = rand::thread_rng();
     let mut content = vec![0; rng.gen_range(1024..4 * 1024 * 1024)];

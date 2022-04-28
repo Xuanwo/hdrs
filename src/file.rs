@@ -13,7 +13,7 @@ use log::debug;
 /// ```
 /// use hdrs::Client;
 ///
-/// let fs = Client::connect("default", 0).expect("client connect succeed");
+/// let fs = Client::connect("default").expect("client connect succeed");
 /// let mut builder = fs
 ///     .open("/tmp/hello.txt", libc::O_RDONLY)
 ///     .expect("must open success");
@@ -48,7 +48,7 @@ impl File {
     /// ```no_run
     /// use hdrs::Client;
     ///
-    /// # let fs = Client::connect("default", 0).expect("client connect succeed");
+    /// # let fs = Client::connect("default").expect("client connect succeed");
     /// # let mut builder = fs.open("/tmp/hello.txt", libc::O_RDONLY).expect("must open succeed");
     /// # let f = builder.build().expect("must build succeed");
     /// let _ = f.seek(1024);
@@ -70,7 +70,7 @@ impl File {
     /// ```no_run
     /// use hdrs::Client;
     ///
-    /// # let fs = Client::connect("default", 0).expect("client connect succeed");
+    /// # let fs = Client::connect("default").expect("client connect succeed");
     /// # let mut builder = fs.open("/tmp/hello.txt", libc::O_RDONLY).expect("must open succeed");
     /// # let mut f = builder.build().expect("must build succeed");
     /// let mut buf = vec![0; 1024];
@@ -100,7 +100,7 @@ impl File {
     /// ```no_run
     /// use hdrs::Client;
     ///
-    /// # let fs = Client::connect("default", 0).expect("client connect succeed");
+    /// # let fs = Client::connect("default").expect("client connect succeed");
     /// # let mut builder = fs.open("/tmp/hello.txt", libc::O_RDONLY).expect("must open succeed");
     /// # let mut f = builder.build().expect("must build succeed");
     /// let buf = "Hello, World!".as_bytes();
@@ -130,7 +130,7 @@ impl File {
     /// ```no_run
     /// use hdrs::Client;
     ///
-    /// # let fs = Client::connect("default", 0).expect("client connect succeed");
+    /// # let fs = Client::connect("default").expect("client connect succeed");
     /// # let mut builder = fs.open("/tmp/hello.txt", libc::O_RDONLY).expect("must open succeed");
     /// # let mut f = builder.build().expect("must build succeed");
     /// let _ = f.flush();
@@ -154,7 +154,7 @@ mod tests {
     fn test_file_build() {
         let _ = env_logger::try_init();
 
-        let fs = Client::connect("default", 0).expect("init success");
+        let fs = Client::connect("default").expect("init success");
 
         let path = uuid::Uuid::new_v4().to_string();
 
@@ -171,7 +171,7 @@ mod tests {
     fn test_file_write() {
         let _ = env_logger::try_init();
 
-        let fs = Client::connect("default", 0).expect("init success");
+        let fs = Client::connect("default").expect("init success");
 
         let path = uuid::Uuid::new_v4().to_string();
 
@@ -191,7 +191,7 @@ mod tests {
     fn test_file_read() {
         let _ = env_logger::try_init();
 
-        let fs = Client::connect("default", 0).expect("init success");
+        let fs = Client::connect("default").expect("init success");
 
         let path = uuid::Uuid::new_v4().to_string();
 

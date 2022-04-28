@@ -6,7 +6,7 @@
 //! use hdrs::Client;
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! let fs = Client::connect("default", 0)?;
+//! let fs = Client::connect("default")?;
 //!
 //! let f = fs
 //!     .open("/tmp/hello.txt", libc::O_WRONLY | libc::O_CREAT)?
