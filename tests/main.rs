@@ -30,7 +30,7 @@ fn test_file() -> Result<()> {
 
     let fs = Client::connect(&name_node)?;
 
-    let path = format!("{name_node}{work_dir}{}", uuid::Uuid::new_v4());
+    let path = format!("{work_dir}{}", uuid::Uuid::new_v4());
 
     let mut rng = rand::thread_rng();
     let mut content = vec![0; rng.gen_range(1024..4 * 1024 * 1024)];
