@@ -1,5 +1,5 @@
 use hdfs_sys::*;
-use std::ffi::{CStr};
+use std::ffi::CStr;
 use std::io;
 
 #[derive(Debug, Clone)]

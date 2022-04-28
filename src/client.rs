@@ -28,11 +28,7 @@ impl Client {
         debug!("connect name node {}:{}", name_node, port);
         let fs = unsafe {
             let name_node = CString::new(name_node)?;
-            hdfsConnect(
-                name_node.as_ptr(),
-                port.try_into()
-                    .map_err(|v| io::Error::new(io::ErrorKind::Other, v))?,
-            )
+            hdfsConnect(name_node.as_ptr(), port as u16)
         };
 
         if fs.is_null() {
@@ -70,6 +66,7 @@ impl Client {
             return Err(io::Error::last_os_error());
         }
 
+        debug!("delete path {} with recursive {} finished", path, recursive);
         Ok(())
     }
 
@@ -136,11 +133,14 @@ impl Client {
 mod tests {
     use crate::client::Client;
     use log::debug;
+    use std::io;
 
     #[test]
     fn test_client_connect() {
+        let _ = env_logger::try_init();
+
         let fs = Client::connect("default", 0).expect("init success");
-        println!("{:?}", fs);
+        assert!(!fs.fs.is_null())
     }
 
     #[test]
@@ -148,12 +148,12 @@ mod tests {
         let _ = env_logger::try_init();
 
         let fs = Client::connect("default", 0).expect("init success");
-        debug!("Client: {:?}", fs);
 
-        let f = fs
-            .open("/tmp/hello.txt", libc::O_RDONLY)
+        let path = uuid::Uuid::new_v4().to_string();
+
+        let _ = fs
+            .open(&format!("/tmp/{path}"), libc::O_RDONLY)
             .expect("open file success");
-        debug!("StreamBuilder: {:?}", f);
     }
 
     #[test]
@@ -163,8 +163,11 @@ mod tests {
         let fs = Client::connect("default", 0).expect("init success");
         debug!("Client: {:?}", fs);
 
-        let f = fs.stat("/tmp/hello.txt").expect("open file success");
-        debug!("FileInfo: {:?}", f);
+        let path = uuid::Uuid::new_v4().to_string();
+
+        let f = fs.stat(&format!("/tmp/{path}"));
+        assert!(f.is_err());
+        assert_eq!(f.unwrap_err().kind(), io::ErrorKind::NotFound);
     }
 
     #[test]

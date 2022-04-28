@@ -1,0 +1,102 @@
+name: CI
+
+on: [ push, pull_request ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        hdfs-version: [ "2.10.1", "3.2.3", "3.3.2" ]
+        os: [ ubuntu-latest ]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Checkout python env
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+      - name: Checkout java env
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: '11'
+      - name: Setup-hdfs env
+        uses: beyondstorage/setup-hdfs@master
+        with:
+          hdfs-version: ${{ matrix.hdfs-version }}
+
+      - uses: ./.github/actions/check
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        hdfs-version: [ "2.10.1", "3.2.3", "3.3.2" ]
+        os: [ ubuntu-latest ]
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: Swatinem/rust-cache@v1
+
+      - name: Checkout python env
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+      - name: Checkout java env
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: '11'
+      - name: Setup-hdfs env
+        uses: beyondstorage/setup-hdfs@master
+        with:
+          hdfs-version: ${{ matrix.hdfs-version }}
+
+      - name: Build
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+
+  unit:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        hdfs-version: [ "2.10.1", "3.2.3", "3.3.2" ]
+        os: [ ubuntu-latest ]
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: Swatinem/rust-cache@v1
+
+      - name: Checkout python env
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+      - name: Checkout java env
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: '11'
+      - name: Setup-hdfs env
+        uses: beyondstorage/setup-hdfs@master
+        with:
+          hdfs-version: ${{ matrix.hdfs-version }}
+
+      - name: Test
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: -- --nocapture
+        env:
+          LD_LIBRARY_PATH: ${{ env.HADOOP_HOME }}/lib/native:${{ env.JAVA_HOME }}/lib/server
+          CLASSPATH: ${{ env.HADOOP_HOME }}/share/hadoop/common/*:${{ env.HADOOP_HOME }}/share/hadoop/common/lib/*:${{ env.HADOOP_HOME }}/share/hadoop/hdfs/*:${{ env.HADOOP_HOME }}/share/hadoop/hdfs/lib/*:${{ env.HADOOP_HOME }}/etc/hadoop/*
+          RUST_LOG: DEBUG
+          RUST_BACKTRACE: full
