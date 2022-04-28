@@ -63,7 +63,7 @@ jobs:
         with:
           command: build
 
-  unit:
+  test:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -91,7 +91,11 @@ jobs:
           command: test
           args: -- --nocapture
         env:
-          LD_LIBRARY_PATH: ${{ env.HADOOP_HOME }}/lib/native:${{ env.JAVA_HOME }}/lib/server:${{ env.LD_LIBRARY_PATH }}
-          CLASSPATH: ${{ env.HADOOP_HOME }}/share/hadoop/common/*:${{ env.HADOOP_HOME }}/share/hadoop/common/lib/*:${{ env.HADOOP_HOME }}/share/hadoop/hdfs/*:${{ env.HADOOP_HOME }}/share/hadoop/hdfs/lib/*:${{ env.HADOOP_HOME }}/etc/hadoop/*
           RUST_LOG: DEBUG
           RUST_BACKTRACE: full
+          HDRS_HDFS_TEST: on
+          HDRS_HDFS_NAMENODE: 127.0.0.1
+          HDRS_HDFS_PORT: 9000
+          HDRS_HDFS_WORKDIR: /
+          LD_LIBRARY_PATH: ${{ env.HADOOP_HOME }}/lib/native:${{ env.JAVA_HOME }}/lib/server:${{ env.LD_LIBRARY_PATH }}
+          CLASSPATH: ${{ env.HADOOP_HOME }}/share/hadoop/common/*:${{ env.HADOOP_HOME }}/share/hadoop/common/lib/*:${{ env.HADOOP_HOME }}/share/hadoop/hdfs/*:${{ env.HADOOP_HOME }}/share/hadoop/hdfs/lib/*:${{ env.HADOOP_HOME }}/etc/hadoop/*

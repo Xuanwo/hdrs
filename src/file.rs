@@ -2,6 +2,7 @@ use std::{io, ptr};
 
 use hdfs_sys::*;
 use libc::c_void;
+use log::debug;
 
 /// File will hold the underlying pointer to `hdfsFile`.
 ///
@@ -27,6 +28,7 @@ pub struct File {
 impl Drop for File {
     fn drop(&mut self) {
         unsafe {
+            debug!("file has been closed");
             let _ = hdfsCloseFile(self.fs, self.f);
             // hdfsCloseFile will free self.f no matter success or failed.
             self.f = ptr::null_mut();
