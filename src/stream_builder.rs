@@ -1,7 +1,8 @@
-use crate::File;
+use std::{io, ptr};
+
 use hdfs_sys::*;
 
-use std::{io, ptr};
+use crate::File;
 
 #[derive(Debug)]
 pub struct StreamBuilder {
