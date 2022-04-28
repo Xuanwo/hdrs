@@ -1,7 +1,6 @@
 use crate::File;
 use hdfs_sys::*;
 
-
 use std::{io, ptr};
 
 #[derive(Debug)]
