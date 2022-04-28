@@ -91,7 +91,7 @@ jobs:
           hdfs-version: ${{ matrix.hdfs-version }}
 
       - run: |
-          tree ${{ env.HADOOP_HOME }}/hadoop-2.10.1
+          tree ${{ env.HADOOP_HOME }}
 
       - name: Test
         uses: actions-rs/cargo@v1
