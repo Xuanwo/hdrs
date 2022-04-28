@@ -44,8 +44,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - uses: Swatinem/rust-cache@v1
-
       - name: Checkout python env
         uses: actions/setup-python@v3
         with:
@@ -74,10 +72,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - uses: Swatinem/rust-cache@v1
-
       - name: Checkout python env
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
           python-version: '3.8'
       - name: Checkout java env
@@ -89,10 +85,6 @@ jobs:
         uses: beyondstorage/setup-hdfs@master
         with:
           hdfs-version: ${{ matrix.hdfs-version }}
-
-      - run: |
-          tree ${{ env.HADOOP_HOME }}
-
       - name: Test
         uses: actions-rs/cargo@v1
         with:
