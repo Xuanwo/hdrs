@@ -83,7 +83,6 @@ impl File {
 #[cfg(test)]
 mod tests {
     use crate::client::Client;
-    use log::debug;
 
     #[test]
     fn test_file_build() {
@@ -91,12 +90,15 @@ mod tests {
 
         let fs = Client::connect("default", 0).expect("init success");
 
+        let path = uuid::Uuid::default().to_string();
+
         let mut f = fs
-            .open("/tmp/hello.txt", libc::O_CREAT | libc::O_WRONLY)
+            .open(&format!("/tmp/{path}"), libc::O_CREAT | libc::O_WRONLY)
             .expect("open file success");
 
         let f = f.build().expect("build file success");
-        debug!("{:?}", f)
+        assert!(!f.f.is_null());
+        assert!(!f.fs.is_null());
     }
 
     #[test]
@@ -105,8 +107,30 @@ mod tests {
 
         let fs = Client::connect("default", 0).expect("init success");
 
+        let path = uuid::Uuid::default().to_string();
+
         let mut f = fs
-            .open("/tmp/hello.txt", libc::O_CREAT | libc::O_WRONLY)
+            .open(&format!("/tmp/{path}"), libc::O_CREAT | libc::O_WRONLY)
+            .expect("open file success");
+
+        let f = f.build().expect("build file success");
+
+        let n = f
+            .write("Hello, World!".as_bytes())
+            .expect("write must success");
+        assert_eq!(n, 13)
+    }
+
+    #[test]
+    fn test_file_read() {
+        let _ = env_logger::try_init();
+
+        let fs = Client::connect("default", 0).expect("init success");
+
+        let path = uuid::Uuid::default().to_string();
+
+        let mut f = fs
+            .open(&format!("/tmp/{path}"), libc::O_CREAT | libc::O_WRONLY)
             .expect("open file success");
 
         let f = f.build().expect("build file success");
