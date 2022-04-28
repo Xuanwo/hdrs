@@ -11,6 +11,17 @@ use crate::stream_builder::StreamBuilder;
 ///
 /// The connection will be disconnected while `Drop`, so their is no need to terminate it manually.
 ///
+/// # Note
+///
+/// Hadoop will have it's own filesystem logic which may return the same filesystem instance while
+/// `hdfsConnect`. If we call `hdfsDisconnect`, all clients that hold this filesystem instance will
+/// meet `java.io.IOException: Filesystem closed` during I/O operations.
+///
+/// So it's better for us to not call `hdfsDisconnect` manually.
+/// Aka, don't implement `Drop` to disconnect the connection.
+///
+/// Reference: [IOException: Filesystem closed exception when running oozie workflo](https://stackoverflow.com/questions/23779186/ioexception-filesystem-closed-exception-when-running-oozie-workflow)
+///
 /// # Examples
 ///
 /// ```
@@ -21,18 +32,6 @@ use crate::stream_builder::StreamBuilder;
 #[derive(Debug)]
 pub struct Client {
     fs: hdfsFS,
-}
-
-/// # Notes
-///
-/// It's possible that hdfsDisconnect returns an error, but hdfs will make sure
-/// the associated resources be freed so it's safe for us to ignore it.
-impl Drop for Client {
-    fn drop(&mut self) {
-        unsafe {
-            let _ = hdfsDisconnect(self.fs);
-        }
-    }
 }
 
 impl Client {
