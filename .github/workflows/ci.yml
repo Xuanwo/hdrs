@@ -44,8 +44,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - uses: Swatinem/rust-cache@v1
-
       - name: Checkout python env
         uses: actions/setup-python@v3
         with:
@@ -74,8 +72,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - uses: Swatinem/rust-cache@v1
-
       - name: Checkout python env
         uses: actions/setup-python@v3
         with:
@@ -89,14 +85,13 @@ jobs:
         uses: beyondstorage/setup-hdfs@master
         with:
           hdfs-version: ${{ matrix.hdfs-version }}
-
       - name: Test
         uses: actions-rs/cargo@v1
         with:
           command: test
           args: -- --nocapture
         env:
-          LD_LIBRARY_PATH: ${{ env.HADOOP_HOME }}/lib/native:${{ env.JAVA_HOME }}/lib/server
+          LD_LIBRARY_PATH: ${{ env.HADOOP_HOME }}/lib/native:${{ env.JAVA_HOME }}/lib/server:${{ env.LD_LIBRARY_PATH }}
           CLASSPATH: ${{ env.HADOOP_HOME }}/share/hadoop/common/*:${{ env.HADOOP_HOME }}/share/hadoop/common/lib/*:${{ env.HADOOP_HOME }}/share/hadoop/hdfs/*:${{ env.HADOOP_HOME }}/share/hadoop/hdfs/lib/*:${{ env.HADOOP_HOME }}/etc/hadoop/*
           RUST_LOG: DEBUG
           RUST_BACKTRACE: full
