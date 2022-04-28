@@ -26,7 +26,7 @@ fn test_file() -> Result<()> {
     }
 
     let name_node = env::var("HDRS_HDFS_NAMENODE")?;
-    let work_dir = env::var("HDRS_HDFS_WORKDIR")?;
+    let work_dir = env::var("HDRS_HDFS_WORKDIR").unwrap_or_default();
 
     let fs = Client::connect(&name_node)?;
 

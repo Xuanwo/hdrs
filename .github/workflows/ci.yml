@@ -95,6 +95,6 @@ jobs:
           RUST_BACKTRACE: full
           HDRS_HDFS_TEST: on
           HDRS_HDFS_NAMENODE: hdfs://${{ env.HDFS_NAMENODE_ADDR }}
-          HDRS_HDFS_WORKDIR: /
+          HDRS_HDFS_WORKDIR: ""
           LD_LIBRARY_PATH: ${{ env.HADOOP_HOME }}/lib/native:${{ env.JAVA_HOME }}/lib/server:${{ env.LD_LIBRARY_PATH }}
           CLASSPATH: ${{ env.HADOOP_HOME }}/share/hadoop/common/*:${{ env.HADOOP_HOME }}/share/hadoop/common/lib/*:${{ env.HADOOP_HOME }}/share/hadoop/hdfs/*:${{ env.HADOOP_HOME }}/share/hadoop/hdfs/lib/*:${{ env.HADOOP_HOME }}/etc/hadoop/*
