@@ -1,8 +1,10 @@
+use std::io::{Read, Seek, SeekFrom, Write};
+use std::{env, io};
+
 use anyhow::Result;
 use hdrs::Client;
 use log::debug;
 use rand::{Rng, RngCore};
-use std::{env, io};
 
 #[test]
 fn test_connect() -> Result<()> {
@@ -39,18 +41,8 @@ fn test_file() -> Result<()> {
     {
         // Write file
         debug!("test file write");
-        let f = fs.open(&path, libc::O_CREAT | libc::O_WRONLY)?.build()?;
-        let mut n = 0;
-        let mut buf = content.as_slice();
-        loop {
-            let tn = f.write(buf)?;
-            buf = &buf[tn..];
-            n += tn;
-            if tn == 0 {
-                break;
-            }
-        }
-        assert_eq!(n, content.len());
+        let mut f = fs.open(&path, libc::O_CREAT | libc::O_WRONLY)?.build()?;
+        let _ = f.write_all(&content)?;
         // Flush file
         debug!("test file flush");
         let _ = f.flush()?;
@@ -59,9 +51,9 @@ fn test_file() -> Result<()> {
     {
         // Read file
         debug!("test file read");
-        let f = fs.open(&path, libc::O_RDONLY)?.build()?;
-        let mut buf = vec![0; content.len()];
-        let n = f.read(&mut buf)?;
+        let mut f = fs.open(&path, libc::O_RDONLY)?.build()?;
+        let mut buf = Vec::new();
+        let n = f.read_to_end(&mut buf)?;
         assert_eq!(n, content.len());
         assert_eq!(buf, content);
     }
@@ -77,12 +69,12 @@ fn test_file() -> Result<()> {
     {
         // Seek file.
         debug!("test file seek");
-        let f = fs.open(&path, libc::O_RDONLY)?.build()?;
+        let mut f = fs.open(&path, libc::O_RDONLY)?.build()?;
         let offset = content.len() / 2;
         let size = content.len() - offset;
-        let mut buf = vec![0; size];
-        let _ = f.seek(offset as i64)?;
-        let n = f.read(&mut buf)?;
+        let mut buf = Vec::new();
+        let _ = f.seek(SeekFrom::Start(offset as u64))?;
+        let n = f.read_to_end(&mut buf)?;
         assert_eq!(n, size);
         assert_eq!(buf, content[offset..]);
     }

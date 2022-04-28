@@ -1,3 +1,4 @@
+use std::io::SeekFrom;
 use std::{io, ptr};
 
 use hdfs_sys::*;
@@ -42,18 +43,7 @@ impl File {
     }
 
     /// Works only for files opened in read-only mode.
-    ///
-    /// # Example
-    ///
-    /// ```no_run
-    /// use hdrs::Client;
-    ///
-    /// # let fs = Client::connect("default").expect("client connect succeed");
-    /// # let mut builder = fs.open("/tmp/hello.txt", libc::O_RDONLY).expect("must open succeed");
-    /// # let f = builder.build().expect("must build succeed");
-    /// let _ = f.seek(1024);
-    /// ```
-    pub fn seek(&self, offset: i64) -> io::Result<()> {
+    fn seek(&self, offset: i64) -> io::Result<()> {
         let n = unsafe { hdfsSeek(self.fs, self.f, offset) };
 
         if n == -1 {
@@ -63,20 +53,19 @@ impl File {
         Ok(())
     }
 
-    /// Read data from file into `buf` and return read size.
-    ///
-    /// # Example
-    ///
-    /// ```no_run
-    /// use hdrs::Client;
-    ///
-    /// # let fs = Client::connect("default").expect("client connect succeed");
-    /// # let mut builder = fs.open("/tmp/hello.txt", libc::O_RDONLY).expect("must open succeed");
-    /// # let mut f = builder.build().expect("must build succeed");
-    /// let mut buf = vec![0; 1024];
-    /// let _ = f.read(&mut buf);
-    /// ```
-    pub fn read(&self, buf: &mut [u8]) -> io::Result<usize> {
+    fn tell(&self) -> io::Result<i64> {
+        let n = unsafe { hdfsTell(self.fs, self.f) };
+
+        if n == -1 {
+            return Err(io::Error::last_os_error());
+        }
+
+        Ok(n)
+    }
+}
+
+impl io::Read for File {
+    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         let n = unsafe {
             hdfsRead(
                 self.fs,
@@ -92,21 +81,31 @@ impl File {
 
         Ok(n as usize)
     }
+}
 
-    /// Write data into file from `buf` and return written size.
-    ///
-    /// # Example
-    ///
-    /// ```no_run
-    /// use hdrs::Client;
-    ///
-    /// # let fs = Client::connect("default").expect("client connect succeed");
-    /// # let mut builder = fs.open("/tmp/hello.txt", libc::O_RDONLY).expect("must open succeed");
-    /// # let mut f = builder.build().expect("must build succeed");
-    /// let buf = "Hello, World!".as_bytes();
-    /// let _ = f.write(&buf);
-    /// ```
-    pub fn write(&self, buf: &[u8]) -> io::Result<usize> {
+impl io::Seek for File {
+    fn seek(&mut self, pos: SeekFrom) -> io::Result<u64> {
+        match pos {
+            SeekFrom::Start(n) => {
+                let _ = File::seek(self, n as i64)?;
+                Ok(n)
+            }
+            SeekFrom::End(_) => Err(io::Error::new(
+                io::ErrorKind::Other,
+                "not supported seek operation",
+            )),
+            SeekFrom::Current(n) => {
+                let current = self.tell()?;
+                let offset = (current + n) as u64;
+                let _ = File::seek(self, offset as i64)?;
+                Ok(offset)
+            }
+        }
+    }
+}
+
+impl io::Write for File {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
         let n = unsafe {
             hdfsWrite(
                 self.fs,
@@ -123,19 +122,7 @@ impl File {
         Ok(n as usize)
     }
 
-    /// Flush data into file.
-    ///
-    /// # Example
-    ///
-    /// ```no_run
-    /// use hdrs::Client;
-    ///
-    /// # let fs = Client::connect("default").expect("client connect succeed");
-    /// # let mut builder = fs.open("/tmp/hello.txt", libc::O_RDONLY).expect("must open succeed");
-    /// # let mut f = builder.build().expect("must build succeed");
-    /// let _ = f.flush();
-    /// ```
-    pub fn flush(&self) -> io::Result<()> {
+    fn flush(&mut self) -> io::Result<()> {
         let n = unsafe { hdfsFlush(self.fs, self.f) };
 
         if n == -1 {
@@ -148,6 +135,8 @@ impl File {
 
 #[cfg(test)]
 mod tests {
+    use std::io::Write;
+
     use crate::client::Client;
 
     #[test]
@@ -179,7 +168,7 @@ mod tests {
             .open(&format!("/tmp/{path}"), libc::O_CREAT | libc::O_WRONLY)
             .expect("open file success");
 
-        let f = f.build().expect("build file success");
+        let mut f = f.build().expect("build file success");
 
         let n = f
             .write("Hello, World!".as_bytes())
@@ -199,7 +188,7 @@ mod tests {
             .open(&format!("/tmp/{path}"), libc::O_CREAT | libc::O_WRONLY)
             .expect("open file success");
 
-        let f = f.build().expect("build file success");
+        let mut f = f.build().expect("build file success");
 
         let n = f
             .write("Hello, World!".as_bytes())
