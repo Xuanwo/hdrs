@@ -3,17 +3,19 @@
 //! # Examples
 //!
 //! ```no_run
+//! use std::io::{Read, Write};
+//!
 //! use hdrs::Client;
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! let fs = Client::connect("default", 0)?;
+//! let fs = Client::connect("default")?;
 //!
-//! let f = fs
+//! let mut f = fs
 //!     .open("/tmp/hello.txt", libc::O_WRONLY | libc::O_CREAT)?
 //!     .build()?;
 //! let n = f.write("Hello, World!".as_bytes())?;
 //!
-//! let f = fs.open("/tmp/hello.txt", libc::O_RDONLY)?.build()?;
+//! let mut f = fs.open("/tmp/hello.txt", libc::O_RDONLY)?.build()?;
 //! let mut buf = vec![0; 1024];
 //! let n = f.read(&mut buf)?;
 //!

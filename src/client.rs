@@ -11,28 +11,27 @@ use crate::stream_builder::StreamBuilder;
 ///
 /// The connection will be disconnected while `Drop`, so their is no need to terminate it manually.
 ///
+/// # Note
+///
+/// Hadoop will have it's own filesystem logic which may return the same filesystem instance while
+/// `hdfsConnect`. If we call `hdfsDisconnect`, all clients that hold this filesystem instance will
+/// meet `java.io.IOException: Filesystem closed` during I/O operations.
+///
+/// So it's better for us to not call `hdfsDisconnect` manually.
+/// Aka, don't implement `Drop` to disconnect the connection.
+///
+/// Reference: [IOException: Filesystem closed exception when running oozie workflo](https://stackoverflow.com/questions/23779186/ioexception-filesystem-closed-exception-when-running-oozie-workflow)
+///
 /// # Examples
 ///
 /// ```
 /// use hdrs::Client;
 ///
-/// let fs = Client::connect("default", 0);
+/// let fs = Client::connect("default");
 /// ```
 #[derive(Debug)]
 pub struct Client {
     fs: hdfsFS,
-}
-
-/// # Notes
-///
-/// It's possible that hdfsDisconnect returns an error, but hdfs will make sure
-/// the associated resources be freed so it's safe for us to ignore it.
-impl Drop for Client {
-    fn drop(&mut self) {
-        unsafe {
-            let _ = hdfsDisconnect(self.fs);
-        }
-    }
 }
 
 impl Client {
@@ -45,21 +44,21 @@ impl Client {
     /// ```
     /// use hdrs::Client;
     ///
-    /// let fs = Client::connect("default", 0);
+    /// let fs = Client::connect("default");
     /// ```
-    pub fn connect(name_node: &str, port: usize) -> io::Result<Self> {
-        debug!("connect name node {}:{}", name_node, port);
+    pub fn connect(name_node: &str) -> io::Result<Self> {
+        debug!("connect name node {}", name_node);
 
         let fs = unsafe {
             let name_node = CString::new(name_node)?;
-            hdfsConnect(name_node.as_ptr(), port as u16)
+            hdfsConnect(name_node.as_ptr(), 0)
         };
 
         if fs.is_null() {
             return Err(io::Error::last_os_error());
         }
 
-        debug!("name node {}:{} connected", name_node, port);
+        debug!("name node {} connected", name_node);
         Ok(Client { fs })
     }
 
@@ -70,7 +69,7 @@ impl Client {
     /// ```
     /// use hdrs::Client;
     ///
-    /// let fs = Client::connect("default", 0).expect("client connect succeed");
+    /// let fs = Client::connect("default").expect("client connect succeed");
     /// let builder = fs.open("/tmp/hello.txt", libc::O_RDONLY);
     /// ```
     pub fn open(&self, path: &str, flags: i32) -> io::Result<StreamBuilder> {
@@ -107,7 +106,7 @@ impl Client {
     /// ```
     /// use hdrs::Client;
     ///
-    /// let fs = Client::connect("default", 0).expect("client connect succeed");
+    /// let fs = Client::connect("default").expect("client connect succeed");
     /// let _ = fs.delete("/tmp/hello.txt", false);
     /// ```
     ///
@@ -116,7 +115,7 @@ impl Client {
     /// ```
     /// use hdrs::Client;
     ///
-    /// let fs = Client::connect("default", 0).expect("client connect succeed");
+    /// let fs = Client::connect("default").expect("client connect succeed");
     /// let _ = fs.delete("/tmp/hello", true);
     /// ```
     pub fn delete(&self, path: &str, recursive: bool) -> io::Result<()> {
@@ -144,7 +143,7 @@ impl Client {
     /// ```
     /// use hdrs::Client;
     ///
-    /// let fs = Client::connect("default", 0).expect("client connect succeed");
+    /// let fs = Client::connect("default").expect("client connect succeed");
     /// let fi = fs.stat("/tmp/hello.txt");
     /// ```
     ///
@@ -155,7 +154,7 @@ impl Client {
     ///
     /// use hdrs::Client;
     ///
-    /// let fs = Client::connect("default", 0).expect("client connect succeed");
+    /// let fs = Client::connect("default").expect("client connect succeed");
     /// let fi = fs.stat("/tmp/not-exist.txt");
     /// assert!(fi.is_err());
     /// assert_eq!(fi.unwrap_err().kind(), io::ErrorKind::NotFound)
@@ -188,7 +187,7 @@ impl Client {
     /// ```
     /// use hdrs::Client;
     ///
-    /// let fs = Client::connect("default", 0).expect("client connect succeed");
+    /// let fs = Client::connect("default").expect("client connect succeed");
     /// let fis = fs.readdir("/tmp/hello/");
     /// ```
     pub fn readdir(&self, path: &str) -> io::Result<Vec<FileInfo>> {
@@ -241,7 +240,7 @@ mod tests {
     fn test_client_connect() {
         let _ = env_logger::try_init();
 
-        let fs = Client::connect("default", 0).expect("init success");
+        let fs = Client::connect("default").expect("init success");
         assert!(!fs.fs.is_null())
     }
 
@@ -249,7 +248,7 @@ mod tests {
     fn test_client_open() {
         let _ = env_logger::try_init();
 
-        let fs = Client::connect("default", 0).expect("init success");
+        let fs = Client::connect("default").expect("init success");
 
         let path = uuid::Uuid::new_v4().to_string();
 
@@ -262,7 +261,7 @@ mod tests {
     fn test_client_stat() {
         let _ = env_logger::try_init();
 
-        let fs = Client::connect("default", 0).expect("init success");
+        let fs = Client::connect("default").expect("init success");
         debug!("Client: {:?}", fs);
 
         let path = uuid::Uuid::new_v4().to_string();
@@ -276,7 +275,7 @@ mod tests {
     fn test_client_readdir() {
         let _ = env_logger::try_init();
 
-        let fs = Client::connect("default", 0).expect("init success");
+        let fs = Client::connect("default").expect("init success");
         debug!("Client: {:?}", fs);
 
         let f = fs.readdir("/tmp").expect("open file success");
