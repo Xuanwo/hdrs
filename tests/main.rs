@@ -40,7 +40,16 @@ fn test_file() -> Result<()> {
         // Write file
         debug!("test file write");
         let f = fs.open(&path, libc::O_CREAT | libc::O_WRONLY)?.build()?;
-        let n = f.write(&content)?;
+        let mut n = 0;
+        let mut buf = content.as_slice();
+        loop {
+            let tn = f.write(buf)?;
+            buf = &buf[tn..];
+            n += tn;
+            if tn == 0 {
+                break;
+            }
+        }
         assert_eq!(n, content.len());
         // Flush file
         debug!("test file flush");
