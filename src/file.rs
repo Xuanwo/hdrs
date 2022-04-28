@@ -1,8 +1,23 @@
+use std::{io, ptr};
+
 use hdfs_sys::*;
 use libc::c_void;
 
-use std::{io, ptr};
-
+/// File will hold the underlying pointer to `hdfsFile`.
+///
+/// The internal file will be closed while `Drop`, so their is no need to close it manually.
+///
+/// # Examples
+///
+/// ```
+/// use hdrs::Client;
+///
+/// let fs = Client::connect("default", 0).expect("client connect succeed");
+/// let mut builder = fs
+///     .open("/tmp/hello.txt", libc::O_RDONLY)
+///     .expect("must open success");
+/// let f = builder.build();
+/// ```
 #[derive(Debug)]
 pub struct File {
     fs: hdfsFS,
@@ -20,11 +35,22 @@ impl Drop for File {
 }
 
 impl File {
-    pub fn new(fs: hdfsFS, f: hdfsFile) -> Self {
+    pub(crate) fn new(fs: hdfsFS, f: hdfsFile) -> Self {
         File { fs, f }
     }
 
-    // Works only for files opened in read-only mode.
+    /// Works only for files opened in read-only mode.
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// use hdrs::Client;
+    ///
+    /// # let fs = Client::connect("default", 0).expect("client connect succeed");
+    /// # let mut builder = fs.open("/tmp/hello.txt", libc::O_RDONLY).expect("must open succeed");
+    /// # let f = builder.build().expect("must build succeed");
+    /// let _ = f.seek(1024);
+    /// ```
     pub fn seek(&self, offset: i64) -> io::Result<()> {
         let n = unsafe { hdfsSeek(self.fs, self.f, offset) };
 
@@ -35,7 +61,20 @@ impl File {
         Ok(())
     }
 
-    pub fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+    /// Read data from file into `buf` and return read size.
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// use hdrs::Client;
+    ///
+    /// # let fs = Client::connect("default", 0).expect("client connect succeed");
+    /// # let mut builder = fs.open("/tmp/hello.txt", libc::O_RDONLY).expect("must open succeed");
+    /// # let mut f = builder.build().expect("must build succeed");
+    /// let mut buf = vec![0; 1024];
+    /// let _ = f.read(&mut buf);
+    /// ```
+    pub fn read(&self, buf: &mut [u8]) -> io::Result<usize> {
         let n = unsafe {
             hdfsRead(
                 self.fs,
@@ -52,6 +91,19 @@ impl File {
         Ok(n as usize)
     }
 
+    /// Write data into file from `buf` and return written size.
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// use hdrs::Client;
+    ///
+    /// # let fs = Client::connect("default", 0).expect("client connect succeed");
+    /// # let mut builder = fs.open("/tmp/hello.txt", libc::O_RDONLY).expect("must open succeed");
+    /// # let mut f = builder.build().expect("must build succeed");
+    /// let buf = "Hello, World!".as_bytes();
+    /// let _ = f.write(&buf);
+    /// ```
     pub fn write(&self, buf: &[u8]) -> io::Result<usize> {
         let n = unsafe {
             hdfsWrite(
@@ -69,6 +121,18 @@ impl File {
         Ok(n as usize)
     }
 
+    /// Flush data into file.
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// use hdrs::Client;
+    ///
+    /// # let fs = Client::connect("default", 0).expect("client connect succeed");
+    /// # let mut builder = fs.open("/tmp/hello.txt", libc::O_RDONLY).expect("must open succeed");
+    /// # let mut f = builder.build().expect("must build succeed");
+    /// let _ = f.flush();
+    /// ```
     pub fn flush(&self) -> io::Result<()> {
         let n = unsafe { hdfsFlush(self.fs, self.f) };
 

@@ -1,6 +1,7 @@
-use hdfs_sys::*;
 use std::ffi::CStr;
 use std::io;
+
+use hdfs_sys::*;
 
 #[derive(Debug, Clone)]
 pub struct FileInfo {

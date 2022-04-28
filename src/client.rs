@@ -1,11 +1,23 @@
-use crate::file_info::FileInfo;
-use hdfs_sys::*;
-use log::debug;
 use std::ffi::CString;
 use std::{io, slice};
 
+use hdfs_sys::*;
+use log::debug;
+
+use crate::file_info::FileInfo;
 use crate::stream_builder::StreamBuilder;
 
+/// Client holds the underlying connection to hdfs clusters.
+///
+/// The connection will be disconnected while `Drop`, so their is no need to terminate it manually.
+///
+/// # Examples
+///
+/// ```
+/// use hdrs::Client;
+///
+/// let fs = Client::connect("default", 0);
+/// ```
 #[derive(Debug)]
 pub struct Client {
     fs: hdfsFS,
@@ -24,8 +36,20 @@ impl Drop for Client {
 }
 
 impl Client {
+    /// Connect to a name node with port
+    ///
+    /// Returns an [`io::Result`] if any error happens.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use hdrs::Client;
+    ///
+    /// let fs = Client::connect("default", 0);
+    /// ```
     pub fn connect(name_node: &str, port: usize) -> io::Result<Self> {
         debug!("connect name node {}:{}", name_node, port);
+
         let fs = unsafe {
             let name_node = CString::new(name_node)?;
             hdfsConnect(name_node.as_ptr(), port as u16)
@@ -39,6 +63,16 @@ impl Client {
         Ok(Client { fs })
     }
 
+    /// Open will create a stream builder for later IO operations.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use hdrs::Client;
+    ///
+    /// let fs = Client::connect("default", 0).expect("client connect succeed");
+    /// let builder = fs.open("/tmp/hello.txt", libc::O_RDONLY);
+    /// ```
     pub fn open(&self, path: &str, flags: i32) -> io::Result<StreamBuilder> {
         debug!("open file {} with flags {}", path, flags);
         let b = unsafe {
@@ -54,6 +88,37 @@ impl Client {
         Ok(StreamBuilder::new(self.fs, b))
     }
 
+    /// Delete a dir or directory.
+    ///
+    /// - If the path is a file, recursive will have no effect.
+    /// - If the path is a dir and recursive is `true`, the dir will be deleted.
+    /// - If the path is an empty dir and recursive is `false`, the dir will be deleted.
+    /// - If the path is non-empty dir and recursive is `false`, an error will be raised.
+    ///
+    /// # Todo
+    ///
+    /// - We need to handle the `Directory /tmp/xxx is not empty` error.
+    /// - Do we need to split this function into `remove_file` and `remove_dir`?
+    ///
+    /// # Examples
+    ///
+    /// ## Delete a file
+    ///
+    /// ```
+    /// use hdrs::Client;
+    ///
+    /// let fs = Client::connect("default", 0).expect("client connect succeed");
+    /// let _ = fs.delete("/tmp/hello.txt", false);
+    /// ```
+    ///
+    /// ## Delete a directory
+    ///
+    /// ```
+    /// use hdrs::Client;
+    ///
+    /// let fs = Client::connect("default", 0).expect("client connect succeed");
+    /// let _ = fs.delete("/tmp/hello", true);
+    /// ```
     pub fn delete(&self, path: &str, recursive: bool) -> io::Result<()> {
         debug!("delete path {} with recursive {}", path, recursive);
 
@@ -70,6 +135,31 @@ impl Client {
         Ok(())
     }
 
+    /// Stat a path to get file info.
+    ///
+    /// # Examples
+    ///
+    /// ## Stat a path to file info
+    ///
+    /// ```
+    /// use hdrs::Client;
+    ///
+    /// let fs = Client::connect("default", 0).expect("client connect succeed");
+    /// let fi = fs.stat("/tmp/hello.txt");
+    /// ```
+    ///
+    /// ## Stat a non-exist path
+    ///
+    /// ```
+    /// use std::io;
+    ///
+    /// use hdrs::Client;
+    ///
+    /// let fs = Client::connect("default", 0).expect("client connect succeed");
+    /// let fi = fs.stat("/tmp/not-exist.txt");
+    /// assert!(fi.is_err());
+    /// assert_eq!(fi.unwrap_err().kind(), io::ErrorKind::NotFound)
+    /// ```
     pub fn stat(&self, path: &str) -> io::Result<FileInfo> {
         let hfi = unsafe {
             let p = CString::new(path)?;
@@ -91,6 +181,16 @@ impl Client {
         Ok(fi)
     }
 
+    /// readdir will read file entries from a file.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use hdrs::Client;
+    ///
+    /// let fs = Client::connect("default", 0).expect("client connect succeed");
+    /// let fis = fs.readdir("/tmp/hello/");
+    /// ```
     pub fn readdir(&self, path: &str) -> io::Result<Vec<FileInfo>> {
         let mut entries = 0;
         let hfis = unsafe {
@@ -131,9 +231,11 @@ impl Client {
 
 #[cfg(test)]
 mod tests {
-    use crate::client::Client;
-    use log::debug;
     use std::io;
+
+    use log::debug;
+
+    use crate::client::Client;
 
     #[test]
     fn test_client_connect() {
