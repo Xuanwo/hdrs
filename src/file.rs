@@ -143,7 +143,7 @@ impl futures_io::AsyncRead for File {
         match self.read(buf) {
             Ok(n) => Poll::Ready(Ok(n)),
             Err(err) => {
-                if err.kind() == ErrorKind::Interrupted {
+                if err.kind() == ErrorKind::WouldBlock {
                     Poll::Pending
                 } else {
                     Poll::Ready(Err(err))
@@ -174,7 +174,7 @@ impl futures_io::AsyncWrite for File {
         match self.write(buf) {
             Ok(n) => Poll::Ready(Ok(n)),
             Err(err) => {
-                if err.kind() == ErrorKind::Interrupted {
+                if err.kind() == ErrorKind::WouldBlock {
                     Poll::Pending
                 } else {
                     Poll::Ready(Err(err))
@@ -205,7 +205,7 @@ impl tokio::io::AsyncRead for File {
                 Poll::Ready(Ok(()))
             }
             Err(err) => {
-                if err.kind() == ErrorKind::Interrupted {
+                if err.kind() == ErrorKind::WouldBlock {
                     Poll::Pending
                 } else {
                     Poll::Ready(Err(err))
@@ -248,7 +248,7 @@ impl tokio::io::AsyncWrite for File {
         match self.write(buf) {
             Ok(n) => Poll::Ready(Ok(n)),
             Err(err) => {
-                if err.kind() == ErrorKind::Interrupted {
+                if err.kind() == ErrorKind::WouldBlock {
                     Poll::Pending
                 } else {
                     Poll::Ready(Err(err))
