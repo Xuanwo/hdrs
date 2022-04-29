@@ -16,17 +16,17 @@ all-features = true
 tokio-io = ["tokio"]
 
 [dependencies]
+futures-io = { version = "0.3.21", optional = true }
 hdfs-sys = "0.1.0"
 libc = "0.2.124"
 log = "0.4.16"
-futures-io = { version = "0.3.21", optional = true }
 tokio = { version = "1.18.0", optional = true }
 
 [dev-dependencies]
-env_logger = "0.9.0"
-uuid = { version = "1.0.0", features = ["v4", "fast-rng", "macro-diagnostics"] }
-dotenv = "0.15.0"
 anyhow = "1.0.57"
+dotenv = "0.15.0"
+env_logger = "0.9.0"
+futures = "0.3.21"
 rand = "0.8.5"
 tokio = { version = "1.18.0", features = ["full"] }
-futures = "0.3.21"
+uuid = { version = "1.0.0", features = ["v4", "fast-rng", "macro-diagnostics"] }

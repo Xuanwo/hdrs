@@ -18,6 +18,28 @@ fn test_connect() -> Result<()> {
 }
 
 #[test]
+fn test_mkdir() -> Result<()> {
+    let _ = env_logger::try_init();
+    dotenv::from_filename(".env").ok();
+
+    if env::var("HDRS_HDFS_TEST").unwrap_or_default() != "on" {
+        return Ok(());
+    }
+
+    let name_node = env::var("HDRS_HDFS_NAMENODE")?;
+    let work_dir = env::var("HDRS_HDFS_WORKDIR").unwrap_or_default();
+
+    let fs = Client::connect(&name_node)?;
+
+    let path = format!("{work_dir}{}", uuid::Uuid::new_v4());
+
+    let _ = fs.mkdir(&path).expect("mkdir should succeed");
+    let _ = fs.delete(&path, true).expect("rmdir should succeed");
+
+    Ok(())
+}
+
+#[test]
 fn test_file() -> Result<()> {
     use std::io::{Read, Seek, SeekFrom, Write};
 

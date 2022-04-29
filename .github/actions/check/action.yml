@@ -29,3 +29,9 @@ runs:
       with:
         command: clippy
         args: --all-targets -- -D warnings
+
+    - name: Clippy with all features
+      uses: actions-rs/cargo@v1
+      with:
+        command: clippy
+        args: --all-features --all-targets -- -D warnings
