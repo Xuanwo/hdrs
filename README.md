@@ -18,11 +18,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let fs = Client::connect("default")?;
     
     let mut f = fs
-        .open("/tmp/hello.txt", libc::O_WRONLY | libc::O_CREAT)?
-        .build()?;
+        .open("/tmp/hello.txt", libc::O_WRONLY | libc::O_CREAT)?;
     let n = f.write("Hello, World!".as_bytes())?;
     
-    let mut f = fs.open("/tmp/hello.txt", libc::O_RDONLY)?.build()?;
+    let mut f = fs.open("/tmp/hello.txt", libc::O_RDONLY)?;
     let mut buf = vec![0; 1024];
     let n = f.read(&mut buf)?;
     
