@@ -1,5 +1,9 @@
-use std::io::SeekFrom;
-use std::{io, ptr};
+use std::io::{Error, ErrorKind, Read, Result, Seek, SeekFrom, Write};
+#[cfg(any(feature = "futures-io", feature = "tokio-io"))]
+use std::pin::Pin;
+use std::ptr;
+#[cfg(any(feature = "futures-io", feature = "tokio-io"))]
+use std::task::{Context, Poll};
 
 use hdfs_sys::*;
 use libc::c_void;
@@ -42,29 +46,29 @@ impl File {
     }
 
     /// Works only for files opened in read-only mode.
-    fn seek(&self, offset: i64) -> io::Result<()> {
+    fn inner_seek(&self, offset: i64) -> Result<()> {
         let n = unsafe { hdfsSeek(self.fs, self.f, offset) };
 
         if n == -1 {
-            return Err(io::Error::last_os_error());
+            return Err(Error::last_os_error());
         }
 
         Ok(())
     }
 
-    fn tell(&self) -> io::Result<i64> {
+    fn tell(&self) -> Result<i64> {
         let n = unsafe { hdfsTell(self.fs, self.f) };
 
         if n == -1 {
-            return Err(io::Error::last_os_error());
+            return Err(Error::last_os_error());
         }
 
         Ok(n)
     }
 }
 
-impl io::Read for File {
-    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+impl Read for File {
+    fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         let n = unsafe {
             hdfsRead(
                 self.fs,
@@ -75,36 +79,33 @@ impl io::Read for File {
         };
 
         if n == -1 {
-            return Err(io::Error::last_os_error());
+            return Err(Error::last_os_error());
         }
 
         Ok(n as usize)
     }
 }
 
-impl io::Seek for File {
-    fn seek(&mut self, pos: SeekFrom) -> io::Result<u64> {
+impl Seek for File {
+    fn seek(&mut self, pos: SeekFrom) -> Result<u64> {
         match pos {
             SeekFrom::Start(n) => {
-                let _ = File::seek(self, n as i64)?;
+                let _ = self.inner_seek(n as i64)?;
                 Ok(n)
             }
-            SeekFrom::End(_) => Err(io::Error::new(
-                io::ErrorKind::Other,
-                "not supported seek operation",
-            )),
+            SeekFrom::End(_) => Err(Error::new(ErrorKind::Other, "not supported seek operation")),
             SeekFrom::Current(n) => {
                 let current = self.tell()?;
                 let offset = (current + n) as u64;
-                let _ = File::seek(self, offset as i64)?;
+                let _ = self.inner_seek(offset as i64)?;
                 Ok(offset)
             }
         }
     }
 }
 
-impl io::Write for File {
-    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+impl Write for File {
+    fn write(&mut self, buf: &[u8]) -> Result<usize> {
         let n = unsafe {
             hdfsWrite(
                 self.fs,
@@ -115,20 +116,153 @@ impl io::Write for File {
         };
 
         if n == -1 {
-            return Err(io::Error::last_os_error());
+            return Err(Error::last_os_error());
         }
 
         Ok(n as usize)
     }
 
-    fn flush(&mut self) -> io::Result<()> {
+    fn flush(&mut self) -> Result<()> {
         let n = unsafe { hdfsFlush(self.fs, self.f) };
 
         if n == -1 {
-            return Err(io::Error::last_os_error());
+            return Err(Error::last_os_error());
         }
 
         Ok(())
+    }
+}
+
+#[cfg(feature = "futures-io")]
+impl futures_io::AsyncRead for File {
+    fn poll_read(
+        mut self: Pin<&mut Self>,
+        _: &mut Context<'_>,
+        buf: &mut [u8],
+    ) -> Poll<Result<usize>> {
+        match self.read(buf) {
+            Ok(n) => Poll::Ready(Ok(n)),
+            Err(err) => {
+                if err.kind() == ErrorKind::Interrupted {
+                    Poll::Pending
+                } else {
+                    Poll::Ready(Err(err))
+                }
+            }
+        }
+    }
+}
+
+#[cfg(feature = "futures-io")]
+impl futures_io::AsyncSeek for File {
+    fn poll_seek(
+        mut self: Pin<&mut Self>,
+        _: &mut Context<'_>,
+        pos: SeekFrom,
+    ) -> Poll<Result<u64>> {
+        Poll::Ready(self.seek(pos))
+    }
+}
+
+#[cfg(feature = "futures-io")]
+impl futures_io::AsyncWrite for File {
+    fn poll_write(
+        mut self: Pin<&mut Self>,
+        _: &mut Context<'_>,
+        buf: &[u8],
+    ) -> Poll<Result<usize>> {
+        match self.write(buf) {
+            Ok(n) => Poll::Ready(Ok(n)),
+            Err(err) => {
+                if err.kind() == ErrorKind::Interrupted {
+                    Poll::Pending
+                } else {
+                    Poll::Ready(Err(err))
+                }
+            }
+        }
+    }
+
+    fn poll_flush(mut self: Pin<&mut Self>, _: &mut Context<'_>) -> Poll<Result<()>> {
+        Poll::Ready(self.flush())
+    }
+
+    fn poll_close(mut self: Pin<&mut Self>, _: &mut Context<'_>) -> Poll<Result<()>> {
+        Poll::Ready(self.flush())
+    }
+}
+
+#[cfg(feature = "tokio-io")]
+impl tokio::io::AsyncRead for File {
+    fn poll_read(
+        mut self: Pin<&mut Self>,
+        _: &mut Context<'_>,
+        buf: &mut tokio::io::ReadBuf<'_>,
+    ) -> Poll<Result<()>> {
+        match self.read(buf.initialize_unfilled()) {
+            Ok(n) => {
+                buf.advance(n);
+                Poll::Ready(Ok(()))
+            }
+            Err(err) => {
+                if err.kind() == ErrorKind::Interrupted {
+                    Poll::Pending
+                } else {
+                    Poll::Ready(Err(err))
+                }
+            }
+        }
+    }
+}
+
+#[cfg(feature = "tokio-io")]
+impl tokio::io::AsyncSeek for File {
+    fn start_seek(self: Pin<&mut Self>, pos: SeekFrom) -> Result<()> {
+        match pos {
+            SeekFrom::Start(n) => {
+                let _ = self.inner_seek(n as i64)?;
+                Ok(())
+            }
+            SeekFrom::End(_) => Err(Error::new(ErrorKind::Other, "not supported seek operation")),
+            SeekFrom::Current(n) => {
+                let current = self.tell()?;
+                let offset = (current + n) as u64;
+                let _ = self.inner_seek(offset as i64)?;
+                Ok(())
+            }
+        }
+    }
+
+    fn poll_complete(self: Pin<&mut Self>, _: &mut Context<'_>) -> Poll<Result<u64>> {
+        Poll::Ready(Ok(self.tell()? as u64))
+    }
+}
+
+#[cfg(feature = "tokio-io")]
+impl tokio::io::AsyncWrite for File {
+    fn poll_write(
+        mut self: Pin<&mut Self>,
+        _: &mut Context<'_>,
+        buf: &[u8],
+    ) -> Poll<Result<usize>> {
+        match self.write(buf) {
+            Ok(n) => Poll::Ready(Ok(n)),
+            Err(err) => {
+                if err.kind() == ErrorKind::Interrupted {
+                    Poll::Pending
+                } else {
+                    Poll::Ready(Err(err))
+                }
+            }
+        }
+    }
+
+    fn poll_flush(mut self: Pin<&mut Self>, _: &mut Context<'_>) -> Poll<Result<()>> {
+        Poll::Ready(self.flush())
+    }
+
+    fn poll_shutdown(mut self: Pin<&mut Self>, _: &mut Context<'_>) -> Poll<Result<()>> {
+        Poll::Ready(self.flush())
     }
 }
 
