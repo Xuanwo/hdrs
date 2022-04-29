@@ -9,6 +9,9 @@ name = "hdrs"
 repository = "https://github.com/Xuanwo/hdrs"
 version = "0.0.2"
 
+[package.metadata.docs.rs]
+all-features = true
+
 [features]
 tokio-io = ["tokio"]
 

@@ -21,6 +21,11 @@
 //! # Ok(())
 //! # }
 //! ```
+//!
+//! # Features
+//!
+//! - `futures-io`: Enable [`futures`](https://docs.rs/futures/latest/futures/io/index.html) support for [`File`]
+//! - `tokio-io`: Enable [`tokio::io`](https://docs.rs/tokio/latest/tokio/io/index.html) support for [`File`]
 
 mod client;
 pub use client::Client;
