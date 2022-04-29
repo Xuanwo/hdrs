@@ -11,14 +11,13 @@ use log::debug;
 ///
 /// # Examples
 ///
-/// ```
+/// ```no_run
 /// use hdrs::Client;
 ///
 /// let fs = Client::connect("default").expect("client connect succeed");
-/// let mut builder = fs
+/// let mut f = fs
 ///     .open("/tmp/hello.txt", libc::O_RDONLY)
 ///     .expect("must open success");
-/// let f = builder.build();
 /// ```
 #[derive(Debug)]
 pub struct File {
@@ -147,11 +146,10 @@ mod tests {
 
         let path = uuid::Uuid::new_v4().to_string();
 
-        let mut f = fs
+        let f = fs
             .open(&format!("/tmp/{path}"), libc::O_CREAT | libc::O_WRONLY)
             .expect("open file success");
 
-        let f = f.build().expect("build file success");
         assert!(!f.f.is_null());
         assert!(!f.fs.is_null());
     }
@@ -167,8 +165,6 @@ mod tests {
         let mut f = fs
             .open(&format!("/tmp/{path}"), libc::O_CREAT | libc::O_WRONLY)
             .expect("open file success");
-
-        let mut f = f.build().expect("build file success");
 
         let n = f
             .write("Hello, World!".as_bytes())
@@ -187,8 +183,6 @@ mod tests {
         let mut f = fs
             .open(&format!("/tmp/{path}"), libc::O_CREAT | libc::O_WRONLY)
             .expect("open file success");
-
-        let mut f = f.build().expect("build file success");
 
         let n = f
             .write("Hello, World!".as_bytes())
