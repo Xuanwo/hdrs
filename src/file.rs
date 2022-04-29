@@ -29,6 +29,10 @@ pub struct File {
     f: hdfsFile,
 }
 
+/// HDFS's client handle is thread safe.
+unsafe impl Send for File {}
+unsafe impl Sync for File {}
+
 impl Drop for File {
     fn drop(&mut self) {
         unsafe {
