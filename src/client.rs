@@ -227,6 +227,31 @@ impl Client {
 
         Ok(fis)
     }
+
+    /// mkdir create dir and all it's parent directories.
+    ///
+    /// The behavior is similar to `mkdir -p /path/to/dir`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use hdrs::Client;
+    ///
+    /// let fs = Client::connect("default").expect("client connect succeed");
+    /// let _ = fs.mkdir("/tmp");
+    /// ```
+    pub fn mkdir(&self, path: &str) -> io::Result<()> {
+        let n = unsafe {
+            let p = CString::new(path)?;
+            hdfsCreateDirectory(self.fs, p.as_ptr())
+        };
+
+        if n == -1 {
+            return Err(io::Error::last_os_error());
+        }
+
+        Ok(())
+    }
 }
 
 #[cfg(test)]
@@ -279,5 +304,15 @@ mod tests {
 
         let f = fs.readdir("/tmp").expect("open file success");
         assert!(!f.is_empty())
+    }
+
+    #[test]
+    fn test_client_mkdir() {
+        let _ = env_logger::try_init();
+
+        let fs = Client::connect("default").expect("init success");
+        debug!("Client: {:?}", fs);
+
+        let _ = fs.mkdir("/tmp").expect("mkdir on exist dir should succeed");
     }
 }
