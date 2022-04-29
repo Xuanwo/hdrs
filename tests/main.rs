@@ -41,7 +41,7 @@ fn test_file() -> Result<()> {
     {
         // Write file
         debug!("test file write");
-        let mut f = fs.open(&path, libc::O_CREAT | libc::O_WRONLY)?.build()?;
+        let mut f = fs.open(&path, libc::O_CREAT | libc::O_WRONLY)?;
         let _ = f.write_all(&content)?;
         // Flush file
         debug!("test file flush");
@@ -51,7 +51,7 @@ fn test_file() -> Result<()> {
     {
         // Read file
         debug!("test file read");
-        let mut f = fs.open(&path, libc::O_RDONLY)?.build()?;
+        let mut f = fs.open(&path, libc::O_RDONLY)?;
         let mut buf = Vec::new();
         let n = f.read_to_end(&mut buf)?;
         assert_eq!(n, content.len());
@@ -69,7 +69,7 @@ fn test_file() -> Result<()> {
     {
         // Seek file.
         debug!("test file seek");
-        let mut f = fs.open(&path, libc::O_RDONLY)?.build()?;
+        let mut f = fs.open(&path, libc::O_RDONLY)?;
         let offset = content.len() / 2;
         let size = content.len() - offset;
         let mut buf = Vec::new();

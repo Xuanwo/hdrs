@@ -5,7 +5,7 @@ use hdfs_sys::*;
 use log::debug;
 
 use crate::file_info::FileInfo;
-use crate::stream_builder::StreamBuilder;
+use crate::File;
 
 /// Client holds the underlying connection to hdfs clusters.
 ///
@@ -72,11 +72,12 @@ impl Client {
     /// let fs = Client::connect("default").expect("client connect succeed");
     /// let builder = fs.open("/tmp/hello.txt", libc::O_RDONLY);
     /// ```
-    pub fn open(&self, path: &str, flags: i32) -> io::Result<StreamBuilder> {
+    pub fn open(&self, path: &str, flags: i32) -> io::Result<File> {
         debug!("open file {} with flags {}", path, flags);
         let b = unsafe {
             let p = CString::new(path)?;
-            hdfsStreamBuilderAlloc(self.fs, p.as_ptr(), flags)
+            // TODO: we need to support buffer size, replication and block size.
+            hdfsOpenFile(self.fs, p.as_ptr(), flags, 0, 0, 0)
         };
 
         if b.is_null() {
@@ -84,7 +85,7 @@ impl Client {
         }
 
         debug!("file {} with flags {} opened", path, flags);
-        Ok(StreamBuilder::new(self.fs, b))
+        Ok(File::new(self.fs, b))
     }
 
     /// Delete a dir or directory.
@@ -252,9 +253,7 @@ mod tests {
 
         let path = uuid::Uuid::new_v4().to_string();
 
-        let _ = fs
-            .open(&format!("/tmp/{path}"), libc::O_RDONLY)
-            .expect("open file success");
+        let _ = fs.open(&format!("/tmp/{path}"), libc::O_RDONLY);
     }
 
     #[test]
