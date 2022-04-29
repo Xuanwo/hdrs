@@ -1,10 +1,10 @@
 use std::ffi::CString;
-use std::{io, slice};
+use std::io;
 
 use hdfs_sys::*;
 use log::debug;
 
-use crate::file_info::FileInfo;
+use crate::metadata::Metadata;
 use crate::File;
 
 /// Client holds the underlying connection to hdfs clusters.
@@ -164,7 +164,7 @@ impl Client {
     /// assert!(fi.is_err());
     /// assert_eq!(fi.unwrap_err().kind(), io::ErrorKind::NotFound)
     /// ```
-    pub fn stat(&self, path: &str) -> io::Result<FileInfo> {
+    pub fn stat(&self, path: &str) -> io::Result<Metadata> {
         let hfi = unsafe {
             let p = CString::new(path)?;
             hdfsGetPathInfo(self.fs, p.as_ptr())
@@ -175,7 +175,7 @@ impl Client {
         }
 
         // Safety: hfi must be valid
-        let fi = unsafe { FileInfo::try_from(*hfi)? };
+        let fi = unsafe { Metadata::from(*hfi) };
 
         // Make sure hfi has been freed.
         //
@@ -195,7 +195,7 @@ impl Client {
     /// let fs = Client::connect("default").expect("client connect succeed");
     /// let fis = fs.readdir("/tmp/hello/");
     /// ```
-    pub fn readdir(&self, path: &str) -> io::Result<Vec<FileInfo>> {
+    pub fn readdir(&self, path: &str) -> io::Result<Vec<Metadata>> {
         let mut entries = 0;
         let hfis = unsafe {
             let p = CString::new(path)?;
@@ -219,14 +219,13 @@ impl Client {
 
         let mut fis = Vec::with_capacity(entries as usize);
 
-        let hf = unsafe { slice::from_raw_parts(hfis, entries as usize) };
-        for v in hf {
-            fis.push(FileInfo::try_from(*v)?)
+        for i in 0..entries {
+            let m = unsafe { Metadata::from(*hfis.offset(i as isize)) };
+
+            fis.push(m)
         }
 
         // Make sure hfis has been freed.
-        //
-        // FIXME: do we need to free file info if `FileInfo::try_from` failed?
         unsafe { hdfsFreeFileInfo(hfis, entries) };
 
         Ok(fis)
@@ -307,6 +306,7 @@ mod tests {
         debug!("Client: {:?}", fs);
 
         let f = fs.readdir("/tmp").expect("open file success");
+        debug!("Metadata: {:?}", f);
         assert!(!f.is_empty())
     }
 
