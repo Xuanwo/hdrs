@@ -34,6 +34,10 @@ pub struct Client {
     fs: hdfsFS,
 }
 
+/// HDFS's client handle is thread safe.
+unsafe impl Send for Client {}
+unsafe impl Sync for Client {}
+
 impl Client {
     /// Connect to a name node with port
     ///
