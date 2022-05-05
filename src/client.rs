@@ -4,8 +4,9 @@ use std::io;
 use hdfs_sys::*;
 use log::debug;
 
+use crate::file::OpenOptions;
 use crate::metadata::Metadata;
-use crate::{File, Readdir};
+use crate::Readdir;
 
 /// Client holds the underlying connection to hdfs clusters.
 ///
@@ -74,22 +75,10 @@ impl Client {
     /// use hdrs::Client;
     ///
     /// let fs = Client::connect("default").expect("client connect succeed");
-    /// let builder = fs.open("/tmp/hello.txt", libc::O_RDONLY);
+    /// let open_options = fs.open_file();
     /// ```
-    pub fn open(&self, path: &str, flags: i32) -> io::Result<File> {
-        debug!("open file {} with flags {}", path, flags);
-        let b = unsafe {
-            let p = CString::new(path)?;
-            // TODO: we need to support buffer size, replication and block size.
-            hdfsOpenFile(self.fs, p.as_ptr(), flags, 0, 0, 0)
-        };
-
-        if b.is_null() {
-            return Err(io::Error::last_os_error());
-        }
-
-        debug!("file {} with flags {} opened", path, flags);
-        Ok(File::new(self.fs, b))
+    pub fn open_file(&self) -> OpenOptions {
+        OpenOptions::new(self.fs)
     }
 
     /// Delete a file.
@@ -310,7 +299,7 @@ mod tests {
 
         let path = uuid::Uuid::new_v4().to_string();
 
-        let _ = fs.open(&format!("/tmp/{path}"), libc::O_RDONLY);
+        let _ = fs.open_file().read(true).open(&format!("/tmp/{path}"));
     }
 
     #[test]
