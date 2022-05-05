@@ -1,4 +1,5 @@
 use std::ffi::{CStr, CString};
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use hdfs_sys::*;
 
@@ -34,8 +35,12 @@ impl Metadata {
     }
 
     /// the size of the file in bytes
-    pub fn size(&self) -> i64 {
-        self.size
+    ///
+    /// Metadata is not a collection, so we will not provide `is_empty`.
+    /// Keep the same style with `std::fs::File`
+    #[allow(clippy::len_without_is_empty)]
+    pub fn len(&self) -> u64 {
+        self.size as u64
     }
 
     /// file or directory
@@ -74,13 +79,17 @@ impl Metadata {
     }
 
     /// the last modification time for the file in seconds
-    pub fn last_mod(&self) -> i64 {
-        self.last_mod
+    pub fn modified(&self) -> SystemTime {
+        UNIX_EPOCH
+            .checked_add(Duration::from_secs(self.last_mod as u64))
+            .expect("must be valid SystemTime")
     }
 
     /// the last access time for the file in seconds
-    pub fn last_access(&self) -> i64 {
-        self.last_access
+    pub fn accessed(&self) -> SystemTime {
+        UNIX_EPOCH
+            .checked_add(Duration::from_secs(self.last_access as u64))
+            .expect("must be valid SystemTime")
     }
 }
 

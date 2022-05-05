@@ -86,7 +86,7 @@ fn test_file() -> Result<()> {
         debug!("test file stat");
         let fi = fs.metadata(&path)?;
         assert!(fi.is_file());
-        assert_eq!(fi.size(), content.len() as i64);
+        assert_eq!(fi.len(), content.len() as u64);
     }
 
     {
@@ -168,7 +168,7 @@ async fn test_tokio_file() -> Result<()> {
         debug!("test file stat");
         let fi = fs.metadata(&path)?;
         assert!(fi.is_file());
-        assert_eq!(fi.size(), content.len() as i64);
+        assert_eq!(fi.len(), content.len() as u64);
     }
 
     {
@@ -250,7 +250,7 @@ async fn test_futures_file() -> Result<()> {
         debug!("test file stat");
         let fi = fs.metadata(&path)?;
         assert!(fi.is_file());
-        assert_eq!(fi.size(), content.len() as i64);
+        assert_eq!(fi.len(), content.len() as u64);
     }
 
     {
