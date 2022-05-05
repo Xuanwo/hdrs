@@ -239,9 +239,9 @@ impl Client {
     /// use hdrs::Client;
     ///
     /// let fs = Client::connect("default").expect("client connect succeed");
-    /// let _ = fs.mkdir("/tmp");
+    /// let _ = fs.create_dir("/tmp");
     /// ```
-    pub fn mkdir(&self, path: &str) -> io::Result<()> {
+    pub fn create_dir(&self, path: &str) -> io::Result<()> {
         let n = unsafe {
             let p = CString::new(path)?;
             hdfsCreateDirectory(self.fs, p.as_ptr())
@@ -315,6 +315,8 @@ mod tests {
         let fs = Client::connect("default").expect("init success");
         debug!("Client: {:?}", fs);
 
-        let _ = fs.mkdir("/tmp").expect("mkdir on exist dir should succeed");
+        let _ = fs
+            .create_dir("/tmp")
+            .expect("mkdir on exist dir should succeed");
     }
 }
