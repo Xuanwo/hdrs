@@ -92,50 +92,81 @@ impl Client {
         Ok(File::new(self.fs, b))
     }
 
-    /// Delete a dir or directory.
-    ///
-    /// - If the path is a file, recursive will have no effect.
-    /// - If the path is a dir and recursive is `true`, the dir will be deleted.
-    /// - If the path is an empty dir and recursive is `false`, the dir will be deleted.
-    /// - If the path is non-empty dir and recursive is `false`, an error will be raised.
-    ///
-    /// # Todo
-    ///
-    /// - We need to handle the `Directory /tmp/xxx is not empty` error.
-    /// - Do we need to split this function into `remove_file` and `remove_dir`?
+    /// Delete a file.
     ///
     /// # Examples
     ///
-    /// ## Delete a file
-    ///
     /// ```
     /// use hdrs::Client;
     ///
     /// let fs = Client::connect("default").expect("client connect succeed");
-    /// let _ = fs.delete("/tmp/hello.txt", false);
+    /// let _ = fs.remove_file("/tmp/hello.txt");
     /// ```
-    ///
-    /// ## Delete a directory
-    ///
-    /// ```
-    /// use hdrs::Client;
-    ///
-    /// let fs = Client::connect("default").expect("client connect succeed");
-    /// let _ = fs.delete("/tmp/hello", true);
-    /// ```
-    pub fn delete(&self, path: &str, recursive: bool) -> io::Result<()> {
-        debug!("delete path {} with recursive {}", path, recursive);
+    pub fn remove_file(&self, path: &str) -> io::Result<()> {
+        debug!("remove file {}", path);
 
         let n = unsafe {
             let p = CString::new(path)?;
-            hdfsDelete(self.fs, p.as_ptr(), recursive.into())
+            hdfsDelete(self.fs, p.as_ptr(), false.into())
         };
 
         if n == -1 {
             return Err(io::Error::last_os_error());
         }
 
-        debug!("delete path {} with recursive {} finished", path, recursive);
+        debug!("delete file {} finished", path);
+        Ok(())
+    }
+
+    /// Delete a dir.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use hdrs::Client;
+    ///
+    /// let fs = Client::connect("default").expect("client connect succeed");
+    /// let _ = fs.remove_dir("/tmp/xxx");
+    /// ```
+    pub fn remove_dir(&self, path: &str) -> io::Result<()> {
+        debug!("remove dir {}", path);
+
+        let n = unsafe {
+            let p = CString::new(path)?;
+            hdfsDelete(self.fs, p.as_ptr(), false.into())
+        };
+
+        if n == -1 {
+            return Err(io::Error::last_os_error());
+        }
+
+        debug!("delete dir {} finished", path);
+        Ok(())
+    }
+
+    /// Delete a dir recursively.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use hdrs::Client;
+    ///
+    /// let fs = Client::connect("default").expect("client connect succeed");
+    /// let _ = fs.remove_dir_all("/tmp/xxx/");
+    /// ```
+    pub fn remove_dir_all(&self, path: &str) -> io::Result<()> {
+        debug!("remove dir all {}", path);
+
+        let n = unsafe {
+            let p = CString::new(path)?;
+            hdfsDelete(self.fs, p.as_ptr(), true.into())
+        };
+
+        if n == -1 {
+            return Err(io::Error::last_os_error());
+        }
+
+        debug!("delete dir all {} finished", path);
         Ok(())
     }
 
