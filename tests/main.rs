@@ -33,7 +33,7 @@ fn test_mkdir() -> Result<()> {
 
     let path = format!("{work_dir}{}", uuid::Uuid::new_v4());
 
-    let _ = fs.mkdir(&path).expect("mkdir should succeed");
+    let _ = fs.create_dir(&path).expect("mkdir should succeed");
     let _ = fs.delete(&path, true).expect("rmdir should succeed");
 
     Ok(())
