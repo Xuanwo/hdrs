@@ -1,6 +1,7 @@
-use crate::Metadata;
 use std::ops::{Deref, DerefMut};
 use std::vec::IntoIter;
+
+use crate::Metadata;
 
 /// Readdir is an Iterator of metadata, returned by [`read_dir`][crate::Client::read_dir]
 #[derive(Debug)]
