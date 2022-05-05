@@ -15,17 +15,16 @@ use std::io::{Read, Write};
 use hdrs::Client;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let fs = Client::connect("default")?;
-    
-    let mut f = fs
-        .open("/tmp/hello.txt", libc::O_WRONLY | libc::O_CREAT)?;
+    let fs = Client::connect("hdfs://127.0.0.1:9000")?;
+
+    let mut f = fs.open_file().write(true).create(true).open("/tmp/hello.txt")?;
     let n = f.write("Hello, World!".as_bytes())?;
-    
-    let mut f = fs.open("/tmp/hello.txt", libc::O_RDONLY)?;
+
+    let mut f = fs.open_file().read(true).open("/tmp/hello.txt")?;
     let mut buf = vec![0; 1024];
     let n = f.read(&mut buf)?;
-    
-    let _ = fs.delete("/tmp/hello.txt", false)?;
+
+    let _ = fs.remove_file("/tmp/hello.txt")?;
 
     Ok(())
 }
