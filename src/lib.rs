@@ -32,6 +32,7 @@ pub use client::Client;
 
 mod file;
 pub use file::File;
+pub use file::OpenOptions;
 
 mod metadata;
 pub use metadata::Metadata;
