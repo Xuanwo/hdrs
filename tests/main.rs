@@ -34,7 +34,7 @@ fn test_mkdir() -> Result<()> {
     let path = format!("{work_dir}{}", uuid::Uuid::new_v4());
 
     let _ = fs.create_dir(&path).expect("mkdir should succeed");
-    let _ = fs.delete(&path, true).expect("rmdir should succeed");
+    let _ = fs.remove_dir(&path).expect("rmdir should succeed");
 
     Ok(())
 }
@@ -105,7 +105,7 @@ fn test_file() -> Result<()> {
     {
         // Remove file
         debug!("test file remove");
-        let result = fs.delete(&path, false);
+        let result = fs.remove_file(&path);
         assert!(result.is_ok());
     }
 
@@ -187,7 +187,7 @@ async fn test_tokio_file() -> Result<()> {
     {
         // Remove file
         debug!("test file remove");
-        let result = fs.delete(&path, false);
+        let result = fs.remove_file(&path);
         assert!(result.is_ok());
     }
 
@@ -269,7 +269,7 @@ async fn test_futures_file() -> Result<()> {
     {
         // Remove file
         debug!("test file remove");
-        let result = fs.delete(&path, false);
+        let result = fs.remove_file(&path);
         assert!(result.is_ok());
     }
 

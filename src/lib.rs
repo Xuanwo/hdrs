@@ -17,7 +17,7 @@
 //! let mut buf = vec![0; 1024];
 //! let n = f.read(&mut buf)?;
 //!
-//! let _ = fs.delete("/tmp/hello.txt", false)?;
+//! let _ = fs.remove_file("/tmp/hello.txt")?;
 //! # Ok(())
 //! # }
 //! ```
