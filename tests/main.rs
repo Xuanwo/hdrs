@@ -84,7 +84,7 @@ fn test_file() -> Result<()> {
     {
         // Stat file.
         debug!("test file stat");
-        let fi = fs.stat(&path)?;
+        let fi = fs.metadata(&path)?;
         assert!(fi.is_file());
         assert_eq!(fi.size(), content.len() as i64);
     }
@@ -112,7 +112,7 @@ fn test_file() -> Result<()> {
     {
         // Stat it again, we should get a NotFound.
         debug!("test file stat again");
-        let fi = fs.stat(&path);
+        let fi = fs.metadata(&path);
         assert!(fi.is_err());
         assert_eq!(fi.unwrap_err().kind(), io::ErrorKind::NotFound);
     }
@@ -166,7 +166,7 @@ async fn test_tokio_file() -> Result<()> {
     {
         // Stat file.
         debug!("test file stat");
-        let fi = fs.stat(&path)?;
+        let fi = fs.metadata(&path)?;
         assert!(fi.is_file());
         assert_eq!(fi.size(), content.len() as i64);
     }
@@ -194,7 +194,7 @@ async fn test_tokio_file() -> Result<()> {
     {
         // Stat it again, we should get a NotFound.
         debug!("test file stat again");
-        let fi = fs.stat(&path);
+        let fi = fs.metadata(&path);
         assert!(fi.is_err());
         assert_eq!(fi.unwrap_err().kind(), io::ErrorKind::NotFound);
     }
@@ -248,7 +248,7 @@ async fn test_futures_file() -> Result<()> {
     {
         // Stat file.
         debug!("test file stat");
-        let fi = fs.stat(&path)?;
+        let fi = fs.metadata(&path)?;
         assert!(fi.is_file());
         assert_eq!(fi.size(), content.len() as i64);
     }
@@ -276,7 +276,7 @@ async fn test_futures_file() -> Result<()> {
     {
         // Stat it again, we should get a NotFound.
         debug!("test file stat again");
-        let fi = fs.stat(&path);
+        let fi = fs.metadata(&path);
         assert!(fi.is_err());
         assert_eq!(fi.unwrap_err().kind(), io::ErrorKind::NotFound);
     }

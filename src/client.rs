@@ -149,7 +149,7 @@ impl Client {
     /// use hdrs::Client;
     ///
     /// let fs = Client::connect("default").expect("client connect succeed");
-    /// let fi = fs.stat("/tmp/hello.txt");
+    /// let fi = fs.metadata("/tmp/hello.txt");
     /// ```
     ///
     /// ## Stat a non-exist path
@@ -160,11 +160,11 @@ impl Client {
     /// use hdrs::Client;
     ///
     /// let fs = Client::connect("default").expect("client connect succeed");
-    /// let fi = fs.stat("/tmp/not-exist.txt");
+    /// let fi = fs.metadata("/tmp/not-exist.txt");
     /// assert!(fi.is_err());
     /// assert_eq!(fi.unwrap_err().kind(), io::ErrorKind::NotFound)
     /// ```
-    pub fn stat(&self, path: &str) -> io::Result<Metadata> {
+    pub fn metadata(&self, path: &str) -> io::Result<Metadata> {
         let hfi = unsafe {
             let p = CString::new(path)?;
             hdfsGetPathInfo(self.fs, p.as_ptr())
@@ -178,8 +178,6 @@ impl Client {
         let fi = unsafe { Metadata::from(*hfi) };
 
         // Make sure hfi has been freed.
-        //
-        // FIXME: do we need to free file info if `FileInfo::try_from` failed?
         unsafe { hdfsFreeFileInfo(hfi, 1) };
 
         Ok(fi)
@@ -293,7 +291,7 @@ mod tests {
 
         let path = uuid::Uuid::new_v4().to_string();
 
-        let f = fs.stat(&format!("/tmp/{path}"));
+        let f = fs.metadata(&format!("/tmp/{path}"));
         assert!(f.is_err());
         assert_eq!(f.unwrap_err().kind(), io::ErrorKind::NotFound);
     }
