@@ -64,7 +64,7 @@ fn test_file() -> Result<()> {
     {
         // Write file
         debug!("test file write");
-        let mut f = fs.open(&path, libc::O_CREAT | libc::O_WRONLY)?;
+        let mut f = fs.open_file().create(true).write(true).open(&path)?;
         let _ = f.write_all(&content)?;
         // Flush file
         debug!("test file flush");
@@ -74,7 +74,7 @@ fn test_file() -> Result<()> {
     {
         // Read file
         debug!("test file read");
-        let mut f = fs.open(&path, libc::O_RDONLY)?;
+        let mut f = fs.open_file().read(true).open(&path)?;
         let mut buf = Vec::new();
         let n = f.read_to_end(&mut buf)?;
         assert_eq!(n, content.len());
@@ -92,7 +92,7 @@ fn test_file() -> Result<()> {
     {
         // Seek file.
         debug!("test file seek");
-        let mut f = fs.open(&path, libc::O_RDONLY)?;
+        let mut f = fs.open_file().read(true).open(&path)?;
         let offset = content.len() / 2;
         let size = content.len() - offset;
         let mut buf = Vec::new();
@@ -146,7 +146,7 @@ async fn test_tokio_file() -> Result<()> {
     {
         // Write file
         debug!("test file write");
-        let mut f = fs.open(&path, libc::O_CREAT | libc::O_WRONLY)?;
+        let mut f = fs.open_file().create(true).write(true).open(&path)?;
         let _ = f.write_all(&content).await?;
         // Flush file
         debug!("test file flush");
@@ -156,7 +156,7 @@ async fn test_tokio_file() -> Result<()> {
     {
         // Read file
         debug!("test file read");
-        let mut f = fs.open(&path, libc::O_RDONLY)?;
+        let mut f = fs.open_file().read(true).open(&path)?;
         let mut buf = Vec::new();
         let n = f.read_to_end(&mut buf).await?;
         assert_eq!(n, content.len());
@@ -174,7 +174,7 @@ async fn test_tokio_file() -> Result<()> {
     {
         // Seek file.
         debug!("test file seek");
-        let mut f = fs.open(&path, libc::O_RDONLY)?;
+        let mut f = fs.open_file().read(true).open(&path)?;
         let offset = content.len() / 2;
         let size = content.len() - offset;
         let mut buf = Vec::new();
@@ -228,7 +228,7 @@ async fn test_futures_file() -> Result<()> {
     {
         // Write file
         debug!("test file write");
-        let mut f = fs.open(&path, libc::O_CREAT | libc::O_WRONLY)?;
+        let mut f = fs.open_file().create(true).write(true).open(&path)?;
         let _ = f.write_all(&content).await?;
         // Flush file
         debug!("test file flush");
@@ -238,7 +238,7 @@ async fn test_futures_file() -> Result<()> {
     {
         // Read file
         debug!("test file read");
-        let mut f = fs.open(&path, libc::O_RDONLY)?;
+        let mut f = fs.open_file().read(true).open(&path)?;
         let mut buf = Vec::new();
         let n = f.read_to_end(&mut buf).await?;
         assert_eq!(n, content.len());
@@ -256,7 +256,7 @@ async fn test_futures_file() -> Result<()> {
     {
         // Seek file.
         debug!("test file seek");
-        let mut f = fs.open(&path, libc::O_RDONLY)?;
+        let mut f = fs.open_file().read(true).open(&path)?;
         let offset = content.len() / 2;
         let size = content.len() - offset;
         let mut buf = Vec::new();
