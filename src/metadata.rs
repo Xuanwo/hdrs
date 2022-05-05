@@ -35,6 +35,10 @@ impl Metadata {
     }
 
     /// the size of the file in bytes
+    ///
+    /// Metadata is not a collection, so we will not provide `is_empty`.
+    /// Keep the same style with `std::fs::File`
+    #[allow(clippy::len_without_is_empty)]
     pub fn len(&self) -> u64 {
         self.size as u64
     }
