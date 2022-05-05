@@ -35,3 +35,6 @@ pub use file::File;
 
 mod metadata;
 pub use metadata::Metadata;
+
+mod readdir;
+pub use readdir::Readdir;
