@@ -5,7 +5,7 @@ use hdfs_sys::*;
 use log::debug;
 
 use crate::metadata::Metadata;
-use crate::File;
+use crate::{File, Readdir};
 
 /// Client holds the underlying connection to hdfs clusters.
 ///
@@ -222,9 +222,9 @@ impl Client {
     /// use hdrs::Client;
     ///
     /// let fs = Client::connect("default").expect("client connect succeed");
-    /// let fis = fs.readdir("/tmp/hello/");
+    /// let fis = fs.read_dir("/tmp/hello/");
     /// ```
-    pub fn readdir(&self, path: &str) -> io::Result<Vec<Metadata>> {
+    pub fn read_dir(&self, path: &str) -> io::Result<Readdir> {
         let mut entries = 0;
         let hfis = unsafe {
             let p = CString::new(path)?;
@@ -240,8 +240,8 @@ impl Client {
             let e = io::Error::last_os_error();
 
             return match e.raw_os_error() {
-                None => Ok(Vec::new()),
-                Some(code) if code == 0 => Ok(Vec::new()),
+                None => Ok(Vec::new().into()),
+                Some(code) if code == 0 => Ok(Vec::new().into()),
                 Some(_) => Err(e),
             };
         }
@@ -257,7 +257,7 @@ impl Client {
         // Make sure hfis has been freed.
         unsafe { hdfsFreeFileInfo(hfis, entries) };
 
-        Ok(fis)
+        Ok(fis.into())
     }
 
     /// mkdir create dir and all it's parent directories.
@@ -334,9 +334,9 @@ mod tests {
         let fs = Client::connect("default").expect("init success");
         debug!("Client: {:?}", fs);
 
-        let f = fs.readdir("/tmp").expect("open file success");
+        let f = fs.read_dir("/tmp").expect("open file success");
         debug!("Metadata: {:?}", f);
-        assert!(!f.is_empty())
+        assert!(f.len() > 0)
     }
 
     #[test]
