@@ -84,7 +84,7 @@ fn test_file() -> Result<()> {
     {
         // Read not exist file
         debug!("test not exist file read");
-        let mut f = fs
+        let f = fs
             .open_file()
             .read(true)
             .open(&format!("{work_dir}{}", uuid::Uuid::new_v4()));
