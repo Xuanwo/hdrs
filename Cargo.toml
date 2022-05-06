@@ -17,7 +17,9 @@ tokio-io = ["tokio"]
 
 [dependencies]
 futures-io = { version = "0.3.21", optional = true }
-hdfs-sys = "0.2.0"
+# hdrs requires at least hadoop 2.3 to work.
+# hadoop 2.2 doesn't handle FileNotFound correctly.
+hdfs-sys = { version = "0.2.0", features = ["hdfs_2_3"] }
 libc = "0.2.124"
 log = "0.4.16"
 tokio = { version = "1.18.0", optional = true }
