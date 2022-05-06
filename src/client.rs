@@ -286,7 +286,7 @@ fn prepare_env() -> io::Result<()> {
     })?;
 
     // If `CLASSPATH` is set, we can return directly.
-    if let Ok(class_path) = env::var("CLASSPATH") {
+    if env::var("CLASSPATH").is_ok() {
         return Ok(());
     }
 
@@ -302,11 +302,11 @@ fn prepare_env() -> io::Result<()> {
     for path in paths {
         for d in fs::read_dir(&path)? {
             let p = d?.path();
-            p.extension().map(|v| {
-                if v == "jar" {
+            if let Some(ext) = p.extension() {
+                if ext == "jar" {
                     jars.push(p.to_string_lossy().to_string());
                 }
-            });
+            }
         }
     }
 
