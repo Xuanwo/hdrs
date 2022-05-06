@@ -9,7 +9,7 @@ use rand::{Rng, RngCore};
 fn test_connect() -> Result<()> {
     dotenv::from_filename(".env").ok();
 
-    let name_node = env::var("HDRS_HDFS_NAMENODE")?;
+    let name_node = env::var("HDRS_NAMENODE")?;
 
     let fs = Client::connect(&name_node);
     assert!(fs.is_ok());
@@ -22,12 +22,12 @@ fn test_mkdir() -> Result<()> {
     let _ = env_logger::try_init();
     dotenv::from_filename(".env").ok();
 
-    if env::var("HDRS_HDFS_TEST").unwrap_or_default() != "on" {
+    if env::var("HDRS_TEST").unwrap_or_default() != "on" {
         return Ok(());
     }
 
-    let name_node = env::var("HDRS_HDFS_NAMENODE")?;
-    let work_dir = env::var("HDRS_HDFS_WORKDIR").unwrap_or_default();
+    let name_node = env::var("HDRS_NAMENODE")?;
+    let work_dir = env::var("HDRS_WORKDIR").unwrap_or_default();
 
     let fs = Client::connect(&name_node)?;
 
@@ -46,12 +46,12 @@ fn test_file() -> Result<()> {
     let _ = env_logger::try_init();
     dotenv::from_filename(".env").ok();
 
-    if env::var("HDRS_HDFS_TEST").unwrap_or_default() != "on" {
+    if env::var("HDRS_TEST").unwrap_or_default() != "on" {
         return Ok(());
     }
 
-    let name_node = env::var("HDRS_HDFS_NAMENODE")?;
-    let work_dir = env::var("HDRS_HDFS_WORKDIR").unwrap_or_default();
+    let name_node = env::var("HDRS_NAMENODE")?;
+    let work_dir = env::var("HDRS_WORKDIR").unwrap_or_default();
 
     let fs = Client::connect(&name_node)?;
 
@@ -129,12 +129,12 @@ async fn test_tokio_file() -> Result<()> {
     let _ = env_logger::try_init();
     dotenv::from_filename(".env").ok();
 
-    if env::var("HDRS_HDFS_TEST").unwrap_or_default() != "on" {
+    if env::var("HDRS_TEST").unwrap_or_default() != "on" {
         return Ok(());
     }
 
-    let name_node = env::var("HDRS_HDFS_NAMENODE")?;
-    let work_dir = env::var("HDRS_HDFS_WORKDIR").unwrap_or_default();
+    let name_node = env::var("HDRS_NAMENODE")?;
+    let work_dir = env::var("HDRS_WORKDIR").unwrap_or_default();
 
     let fs = Client::connect(&name_node)?;
 
@@ -212,12 +212,12 @@ async fn test_futures_file() -> Result<()> {
     let _ = env_logger::try_init();
     dotenv::from_filename(".env").ok();
 
-    if env::var("HDRS_HDFS_TEST").unwrap_or_default() != "on" {
+    if env::var("HDRS_TEST").unwrap_or_default() != "on" {
         return Ok(());
     }
 
-    let name_node = env::var("HDRS_HDFS_NAMENODE")?;
-    let work_dir = env::var("HDRS_HDFS_WORKDIR").unwrap_or_default();
+    let name_node = env::var("HDRS_NAMENODE")?;
+    let work_dir = env::var("HDRS_WORKDIR").unwrap_or_default();
 
     let fs = Client::connect(&name_node)?;
 

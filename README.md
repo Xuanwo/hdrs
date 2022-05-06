@@ -32,24 +32,30 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ## Compiletime
 
-`hdrs` depends on [hdfs-sys](https://github.com/Xuanwo/hdfs-sys) which links `libjvm` and `libhdfs` to work.
+`hdrs` depends on [hdfs-sys](https://github.com/Xuanwo/hdfs-sys) which links `libjvm` to work.
 
-Please make sure `JAVA_HOME`, `HADOOP_HOME` and `LD_LIBRARY_PATH` is set correctly:
+Please make sure `JAVA_HOME` is set correctly:
 
 ```shell
 export JAVA_HOME=/path/to/java
-export HADOOP_HOME=/path/to/hadoop
-export LD_LIBRARY_PATH=${HADOOP_HOME}/lib/native:${JAVA_HOME}/lib/server:${LD_LIBRARY_PATH}
+export LD_LIBRARY_PATH=${JAVA_HOME}/lib/server:${LD_LIBRARY_PATH}
 ```
 
 ## Runtime
 
 `hdrs` depends on [hdfs-sys](https://github.com/Xuanwo/hdfs-sys) which uses JNI to call functions provided by jars that provided by hadoop releases. 
 
-Please also make sure `CLASSPATH` is set correctly during runtime:
+Please also make sure `HADOOP_HOME`, `LD_LIBRARY_PATH` is set correctly during runtime:
 
 ```shell
-export CLASSPATH=${HADOOP_HOME}/share/hadoop/common/*:${HADOOP_HOME}/share/hadoop/common/lib/*:${HADOOP_HOME}/share/hadoop/hdfs/*:${HADOOP_HOME}/share/hadoop/hdfs/lib/*:${HADOOP_HOME}/etc/hadoop/*
+export HADOOP_HOME=/path/to/hadoop
+export LD_LIBRARY_PATH=${JAVA_HOME}/lib/server:${LD_LIBRARY_PATH}
+```
+
+`hdrs` will detect `CLASSPATH` based on `HADOOP_HOME`, users can override the behavior via setting `CLASSPATH` manually:
+
+```shell
+export CLASSPATH=$(find $HADOOP_HOME -iname "*.jar" | xargs echo | tr ' ' ':')
 ```
 
 ## Contributing
