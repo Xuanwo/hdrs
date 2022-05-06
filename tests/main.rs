@@ -82,6 +82,17 @@ fn test_file() -> Result<()> {
     }
 
     {
+        // Read not exist file
+        debug!("test not exist file read");
+        let mut f = fs
+            .open_file()
+            .read(true)
+            .open(&format!("{work_dir}{}", uuid::Uuid::new_v4()));
+        assert!(f.is_err());
+        assert_eq!(f.unwrap_err().kind(), io::ErrorKind::NotFound)
+    }
+
+    {
         // Stat file.
         debug!("test file stat");
         let fi = fs.metadata(&path)?;
