@@ -32,9 +32,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ## Compiletime
 
-`hdrs` depends on [hdfs-sys](https://github.com/Xuanwo/hdfs-sys) which links `libjvm` and `libhdfs` to work.
+`hdrs` depends on [hdfs-sys](https://github.com/Xuanwo/hdfs-sys) which links `libjvm` to work.
 
-Please make sure `JAVA_HOME`, `HADOOP_HOME` and `LD_LIBRARY_PATH` is set correctly:
+Please make sure `JAVA_HOME` is set correctly:
 
 ```shell
 export JAVA_HOME=/path/to/java
@@ -46,9 +46,11 @@ export LD_LIBRARY_PATH=${HADOOP_HOME}/lib/native:${JAVA_HOME}/lib/server:${LD_LI
 
 `hdrs` depends on [hdfs-sys](https://github.com/Xuanwo/hdfs-sys) which uses JNI to call functions provided by jars that provided by hadoop releases. 
 
-Please also make sure `CLASSPATH` is set correctly during runtime:
+Please also make sure `HADOOP_HOME`, `LD_LIBRARY_PATH`, `CLASSPATH` is set correctly during runtime:
 
 ```shell
+export HADOOP_HOME=/path/to/hadoop
+export LD_LIBRARY_PATH=${JAVA_HOME}/lib/server:${LD_LIBRARY_PATH}
 export CLASSPATH=${HADOOP_HOME}/share/hadoop/common/*:${HADOOP_HOME}/share/hadoop/common/lib/*:${HADOOP_HOME}/share/hadoop/hdfs/*:${HADOOP_HOME}/share/hadoop/hdfs/lib/*:${HADOOP_HOME}/etc/hadoop/*
 ```
 
