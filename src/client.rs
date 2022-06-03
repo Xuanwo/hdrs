@@ -55,6 +55,8 @@ impl Client {
     pub fn connect(name_node: &str) -> io::Result<Self> {
         prepare_env()?;
 
+        set_errno(Errno(0));
+
         debug!("connect name node {}", name_node);
 
         let fs = unsafe {
@@ -188,6 +190,8 @@ impl Client {
     /// assert_eq!(fi.unwrap_err().kind(), io::ErrorKind::NotFound)
     /// ```
     pub fn metadata(&self, path: &str) -> io::Result<Metadata> {
+        set_errno(Errno(0));
+
         let hfi = unsafe {
             let p = CString::new(path)?;
             hdfsGetPathInfo(self.fs, p.as_ptr())
