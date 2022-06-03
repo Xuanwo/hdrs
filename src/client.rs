@@ -1,6 +1,7 @@
 use std::ffi::CString;
 use std::{env, fs, io};
 
+use errno::{set_errno, Errno};
 use hdfs_sys::*;
 use log::debug;
 
@@ -53,6 +54,8 @@ impl Client {
     /// ```
     pub fn connect(name_node: &str) -> io::Result<Self> {
         prepare_env()?;
+
+        set_errno(Errno(0));
 
         debug!("connect name node {}", name_node);
 
@@ -187,6 +190,8 @@ impl Client {
     /// assert_eq!(fi.unwrap_err().kind(), io::ErrorKind::NotFound)
     /// ```
     pub fn metadata(&self, path: &str) -> io::Result<Metadata> {
+        set_errno(Errno(0));
+
         let hfi = unsafe {
             let p = CString::new(path)?;
             hdfsGetPathInfo(self.fs, p.as_ptr())
@@ -216,6 +221,8 @@ impl Client {
     /// let fis = fs.read_dir("/tmp/hello/");
     /// ```
     pub fn read_dir(&self, path: &str) -> io::Result<Readdir> {
+        set_errno(Errno(0));
+
         let mut entries = 0;
         let hfis = unsafe {
             let p = CString::new(path)?;
