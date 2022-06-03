@@ -58,6 +58,12 @@ export LD_LIBRARY_PATH=${JAVA_HOME}/lib/server:${LD_LIBRARY_PATH}
 export CLASSPATH=$(find $HADOOP_HOME -iname "*.jar" | xargs echo | tr ' ' ':')
 ```
 
+## Version Requirement
+
+`hdrs` requires at least hadoop 2.3 to work: hadoop 2.2 doesn't handle FileNotFound correctly.
+
+`hdrs` requires at least hadoop 2.6 to work: Older version of hadoop doesn't handle errno correctly. In older versions, hadoop will set errno to `3` if input path is an empty dir.
+
 ## Contributing
 
 Check out the [CONTRIBUTING.md](./CONTRIBUTING.md) guide for more details on getting started with contributing to this project.

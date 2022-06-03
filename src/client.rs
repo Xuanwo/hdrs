@@ -1,6 +1,7 @@
 use std::ffi::CString;
 use std::{env, fs, io};
 
+use errno::{set_errno, Errno};
 use hdfs_sys::*;
 use log::debug;
 
@@ -216,6 +217,8 @@ impl Client {
     /// let fis = fs.read_dir("/tmp/hello/");
     /// ```
     pub fn read_dir(&self, path: &str) -> io::Result<Readdir> {
+        set_errno(Errno(0));
+
         let mut entries = 0;
         let hfis = unsafe {
             let p = CString::new(path)?;

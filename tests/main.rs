@@ -40,6 +40,31 @@ fn test_mkdir() -> Result<()> {
 }
 
 #[test]
+fn test_read_dir() -> Result<()> {
+    let _ = env_logger::try_init();
+    dotenv::from_filename(".env").ok();
+
+    if env::var("HDRS_TEST").unwrap_or_default() != "on" {
+        return Ok(());
+    }
+
+    let name_node = env::var("HDRS_NAMENODE")?;
+    let work_dir = env::var("HDRS_WORKDIR").unwrap_or_default();
+
+    let fs = Client::connect(&name_node)?;
+
+    let path = format!("{work_dir}{}", uuid::Uuid::new_v4());
+
+    let _ = fs.create_dir(&path).expect("mkdir should succeed");
+    debug!("read dir {}", path);
+    let readdir = fs.read_dir(&path).expect("readdir should succeed");
+    debug!("readdir: {:?}", readdir);
+    assert_eq!(readdir.len(), 0);
+
+    Ok(())
+}
+
+#[test]
 fn test_file() -> Result<()> {
     use std::io::{Read, Seek, SeekFrom, Write};
 
