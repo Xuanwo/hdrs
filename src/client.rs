@@ -385,4 +385,20 @@ mod tests {
             .create_dir("/tmp")
             .expect("mkdir on exist dir should succeed");
     }
+
+    #[test]
+    fn test_client_append_not_exist_file() {
+        let _ = env_logger::try_init();
+
+        let fs = Client::connect("default").expect("init success");
+        debug!("Client: {:?}", fs);
+
+        let _ = fs
+            .open_file()
+            .create(true)
+            .append(true)
+            .write(true)
+            .open("/tmp/not_exist")
+            .expect("mkdir on exist dir should succeed");
+    }
 }
