@@ -384,7 +384,8 @@ impl Read for File {
                 self.fs,
                 self.f,
                 buf.as_ptr() as *mut c_void,
-                buf.len() as i32,
+                // at most 2^30 bytes, ~1GB
+                buf.len().min(1073741824) as i32,
             )
         };
 
@@ -421,7 +422,8 @@ impl Write for File {
                 self.fs,
                 self.f,
                 buf.as_ptr() as *const c_void,
-                buf.len() as i32,
+                // at most 2^30 bytes, ~1GB
+                buf.len().min(1073741824) as i32,
             )
         };
 
