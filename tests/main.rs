@@ -33,8 +33,8 @@ fn test_mkdir() -> Result<()> {
 
     let path = format!("{work_dir}{}", uuid::Uuid::new_v4());
 
-    let _ = fs.create_dir(&path).expect("mkdir should succeed");
-    let _ = fs.remove_dir(&path).expect("rmdir should succeed");
+    fs.create_dir(&path).expect("mkdir should succeed");
+    fs.remove_dir(&path).expect("rmdir should succeed");
 
     Ok(())
 }
@@ -55,7 +55,7 @@ fn test_read_dir() -> Result<()> {
 
     let path = format!("{work_dir}{}", uuid::Uuid::new_v4());
 
-    let _ = fs.create_dir(&path).expect("mkdir should succeed");
+    fs.create_dir(&path).expect("mkdir should succeed");
     debug!("read dir {}", path);
     let readdir = fs.read_dir(&path).expect("readdir should succeed");
     debug!("readdir: {:?}", readdir);
@@ -90,10 +90,10 @@ fn test_file() -> Result<()> {
         // Write file
         debug!("test file write");
         let mut f = fs.open_file().create(true).write(true).open(&path)?;
-        let _ = f.write_all(&content)?;
+        f.write_all(&content)?;
         // Flush file
         debug!("test file flush");
-        let _ = f.flush()?;
+        f.flush()?;
     }
 
     {
@@ -184,10 +184,10 @@ async fn test_tokio_file() -> Result<()> {
         // Write file
         debug!("test file write");
         let mut f = fs.open_file().create(true).write(true).open(&path)?;
-        let _ = f.write_all(&content).await?;
+        f.write_all(&content).await?;
         // Flush file
         debug!("test file flush");
-        let _ = f.flush().await?;
+        f.flush().await?;
     }
 
     {
@@ -267,10 +267,10 @@ async fn test_futures_file() -> Result<()> {
         // Write file
         debug!("test file write");
         let mut f = fs.open_file().create(true).write(true).open(&path)?;
-        let _ = f.write_all(&content).await?;
+        f.write_all(&content).await?;
         // Flush file
         debug!("test file flush");
-        let _ = f.flush().await?;
+        f.flush().await?;
     }
 
     {
