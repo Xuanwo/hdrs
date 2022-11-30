@@ -381,8 +381,7 @@ mod tests {
         let fs = Client::connect("default").expect("init success");
         debug!("Client: {:?}", fs);
 
-        let _ = fs
-            .create_dir("/tmp")
+        fs.create_dir("/tmp")
             .expect("mkdir on exist dir should succeed");
     }
 }

@@ -4,7 +4,7 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use hdfs_sys::*;
 
 /// Metadata of a path.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Metadata {
     /// the name of the file, like `file:/path/to/file`
     path: String,

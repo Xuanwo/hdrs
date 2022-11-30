@@ -403,14 +403,14 @@ impl Seek for File {
     fn seek(&mut self, pos: SeekFrom) -> Result<u64> {
         match pos {
             SeekFrom::Start(n) => {
-                let _ = self.inner_seek(n as i64)?;
+                self.inner_seek(n as i64)?;
                 Ok(n)
             }
             SeekFrom::End(_) => Err(Error::new(ErrorKind::Other, "not supported seek operation")),
             SeekFrom::Current(n) => {
                 let current = self.tell()?;
                 let offset = (current + n) as u64;
-                let _ = self.inner_seek(offset as i64)?;
+                self.inner_seek(offset as i64)?;
                 Ok(offset)
             }
         }
@@ -533,14 +533,14 @@ impl tokio::io::AsyncSeek for File {
     fn start_seek(self: Pin<&mut Self>, pos: SeekFrom) -> Result<()> {
         match pos {
             SeekFrom::Start(n) => {
-                let _ = self.inner_seek(n as i64)?;
+                self.inner_seek(n as i64)?;
                 Ok(())
             }
             SeekFrom::End(_) => Err(Error::new(ErrorKind::Other, "not supported seek operation")),
             SeekFrom::Current(n) => {
                 let current = self.tell()?;
                 let offset = (current + n) as u64;
-                let _ = self.inner_seek(offset as i64)?;
+                self.inner_seek(offset as i64)?;
                 Ok(())
             }
         }
