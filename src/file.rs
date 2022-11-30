@@ -11,7 +11,7 @@ use libc::c_void;
 use log::debug;
 
 // at most 2^30 bytes, ~1GB
-const FILE_LIMIT: i32 = 1073741824;
+const FILE_LIMIT: usize = 1073741824;
 
 /// Options and flags which can be used to configure how a file is opened.
 ///
@@ -387,7 +387,7 @@ impl Read for File {
                 self.fs,
                 self.f,
                 buf.as_ptr() as *mut c_void,
-                (buf.len() as i32).min(FILE_LIMIT),
+                buf.len().min(FILE_LIMIT) as i32,
             )
         };
 
@@ -424,7 +424,7 @@ impl Write for File {
                 self.fs,
                 self.f,
                 buf.as_ptr() as *const c_void,
-                (buf.len() as i32).min(FILE_LIMIT),
+                buf.len().min(FILE_LIMIT) as i32,
             )
         };
 
