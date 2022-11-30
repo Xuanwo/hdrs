@@ -65,6 +65,48 @@ fn test_read_dir() -> Result<()> {
 }
 
 #[test]
+fn test_rename() -> Result<()> {
+    use std::io::{Read, Write};
+
+    dotenv::from_filename(".env").ok();
+
+    let name_node = env::var("HDRS_NAMENODE")?;
+    let work_dir = env::var("HDRS_WORKDIR").unwrap_or_default();
+
+    let fs = Client::connect(&name_node)?;
+
+    let path = format!("{work_dir}{}", uuid::Uuid::new_v4());
+    {
+        let mut f = fs.open_file().create(true).write(true).open(&path)?;
+        f.write_all(b"test file content")?;
+        f.flush()?;
+    }
+    let new_path = format!("{work_dir}{}", uuid::Uuid::new_v4());
+    fs.rename_file(&path, &new_path)?;
+
+    {
+        let maybe_metadata = fs.metadata(&path);
+        assert!(maybe_metadata.is_err());
+        let err = maybe_metadata.unwrap_err();
+        assert_eq!(err.kind(), io::ErrorKind::NotFound);
+    }
+    {
+        let maybe_metadata = fs.metadata(&new_path);
+        assert!(maybe_metadata.is_ok());
+        let metadata = maybe_metadata.unwrap();
+        assert!(metadata.is_file());
+    }
+    {
+        let mut f = fs.open_file().read(true).open(&new_path)?;
+        let mut content = String::new();
+        f.read_to_string(&mut content)?;
+        assert_eq!(content.as_str(), "test file content");
+    }
+
+    Ok(())
+}
+
+#[test]
 fn test_file() -> Result<()> {
     use std::io::{Read, Seek, SeekFrom, Write};
 
