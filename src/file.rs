@@ -10,6 +10,9 @@ use hdfs_sys::*;
 use libc::c_void;
 use log::debug;
 
+// at most 2^30 bytes, ~1GB
+const FILE_LIMIT: i32 = 1073741824;
+
 /// Options and flags which can be used to configure how a file is opened.
 ///
 /// This builder exposes the ability to configure how a [`File`] is opened and
@@ -384,8 +387,7 @@ impl Read for File {
                 self.fs,
                 self.f,
                 buf.as_ptr() as *mut c_void,
-                // at most 2^30 bytes, ~1GB
-                buf.len().min(1073741824) as i32,
+                (buf.len() as i32).min(FILE_LIMIT),
             )
         };
 
@@ -422,8 +424,7 @@ impl Write for File {
                 self.fs,
                 self.f,
                 buf.as_ptr() as *const c_void,
-                // at most 2^30 bytes, ~1GB
-                buf.len().min(1073741824) as i32,
+                (buf.len() as i32).min(FILE_LIMIT),
             )
         };
 
