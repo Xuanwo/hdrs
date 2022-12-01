@@ -112,6 +112,35 @@ impl Client {
         Ok(())
     }
 
+    /// Rename a file.
+    ///
+    /// **ATTENTION**: the destination directory must exist.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use hdrs::Client;
+    ///
+    /// let fs = Client::connect("default").expect("client connect succeed");
+    /// let _ = fs.rename_file("/tmp/hello.txt._COPY_", "/tmp/hello.txt");
+    /// ```
+    pub fn rename_file(&self, old_path: &str, new_path: &str) -> io::Result<()> {
+        debug!("rename file {} -> {}", old_path, new_path);
+
+        let n = {
+            let old_path = CString::new(old_path)?;
+            let new_path = CString::new(new_path)?;
+            unsafe { hdfsRename(self.fs, old_path.as_ptr(), new_path.as_ptr()) }
+        };
+
+        if n == -1 {
+            return Err(io::Error::last_os_error());
+        }
+
+        debug!("rename file {} -> {} finished", old_path, new_path);
+        Ok(())
+    }
+
     /// Delete a dir.
     ///
     /// # Examples
