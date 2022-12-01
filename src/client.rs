@@ -72,6 +72,38 @@ impl Client {
         Ok(Client { fs })
     }
 
+    /// Connect to a name node with port as specified user
+    ///
+    /// Returns an [`io::Result`] if any error happens.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use hdrs::Client;
+    ///
+    /// let fs = Client::connect_as_user("default", "user");
+    /// ```
+    pub fn connect_as_user(name_node: &str, user: &str) -> io::Result<Self> {
+        prepare_env()?;
+
+        set_errno(Errno(0));
+
+        debug!("connect name node {} as user {}", name_node, user);
+
+        let fs = {
+            let name_node = CString::new(name_node)?;
+            let user = CString::new(user)?;
+            unsafe { hdfsConnectAsUser(name_node.as_ptr(), 0, user.as_ptr()) }
+        };
+
+        if fs.is_null() {
+            return Err(io::Error::last_os_error());
+        }
+
+        debug!("name node {} connected as user {}", name_node, user);
+        Ok(Client { fs })
+    }
+
     /// Open will create a stream builder for later IO operations.
     ///
     /// # Examples
