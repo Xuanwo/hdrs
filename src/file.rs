@@ -1,5 +1,5 @@
 use std::ffi::CString;
-use std::io::{Error, ErrorKind, Read, Result, Seek, SeekFrom, Write};
+use std::io::{Error, Read, Result, Seek, SeekFrom, Write};
 #[cfg(any(feature = "futures-io", feature = "tokio-io"))]
 use std::pin::Pin;
 use std::ptr;
@@ -468,7 +468,7 @@ impl futures_io::AsyncRead for File {
         match self.read(buf) {
             Ok(n) => Poll::Ready(Ok(n)),
             Err(err) => {
-                if err.kind() == ErrorKind::WouldBlock {
+                if err.kind() == std::io::ErrorKind::WouldBlock {
                     Poll::Pending
                 } else {
                     Poll::Ready(Err(err))
@@ -499,7 +499,7 @@ impl futures_io::AsyncWrite for File {
         match self.write(buf) {
             Ok(n) => Poll::Ready(Ok(n)),
             Err(err) => {
-                if err.kind() == ErrorKind::WouldBlock {
+                if err.kind() == std::io::ErrorKind::WouldBlock {
                     Poll::Pending
                 } else {
                     Poll::Ready(Err(err))
@@ -530,7 +530,7 @@ impl tokio::io::AsyncRead for File {
                 Poll::Ready(Ok(()))
             }
             Err(err) => {
-                if err.kind() == ErrorKind::WouldBlock {
+                if err.kind() == std::io::ErrorKind::WouldBlock {
                     Poll::Pending
                 } else {
                     Poll::Ready(Err(err))
@@ -548,7 +548,10 @@ impl tokio::io::AsyncSeek for File {
                 self.inner_seek(n as i64)?;
                 Ok(())
             }
-            SeekFrom::End(_) => Err(Error::new(ErrorKind::Other, "not supported seek operation")),
+            SeekFrom::End(_) => Err(Error::new(
+                std::io::ErrorKind::Other,
+                "not supported seek operation",
+            )),
             SeekFrom::Current(n) => {
                 let current = self.tell()?;
                 let offset = (current + n) as u64;
@@ -573,7 +576,7 @@ impl tokio::io::AsyncWrite for File {
         match self.write(buf) {
             Ok(n) => Poll::Ready(Ok(n)),
             Err(err) => {
-                if err.kind() == ErrorKind::WouldBlock {
+                if err.kind() == std::io::ErrorKind::WouldBlock {
                     Poll::Pending
                 } else {
                     Poll::Ready(Err(err))
