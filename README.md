@@ -1,6 +1,6 @@
 # hdrs &emsp; [![Build Status]][actions] [![Latest Version]][crates.io]
 
-[Build Status]: https://img.shields.io/github/workflow/status/Xuanwo/hdrs/CI/main
+[Build Status]: https://img.shields.io/github/actions/workflow/status/Xuanwo/hdrs/ci.yml?branch=main
 [actions]: https://github.com/Xuanwo/hdrs/actions?query=branch%3Amain
 [Latest Version]: https://img.shields.io/crates/v/hdrs.svg
 [crates.io]: https://crates.io/crates/hdrs
@@ -43,7 +43,7 @@ export LD_LIBRARY_PATH=${JAVA_HOME}/lib/server:${LD_LIBRARY_PATH}
 
 ## Runtime
 
-`hdrs` depends on [hdfs-sys](https://github.com/Xuanwo/hdfs-sys) which uses JNI to call functions provided by jars that provided by hadoop releases. 
+`hdrs` depends on [hdfs-sys](https://github.com/Xuanwo/hdfs-sys) which uses JNI to call functions provided by jars that provided by hadoop releases.
 
 Please also make sure `HADOOP_HOME`, `LD_LIBRARY_PATH` is set correctly during runtime:
 
