@@ -10,6 +10,8 @@ use hdfs_sys::*;
 use libc::c_void;
 use log::debug;
 
+use crate::Client;
+
 // at most 2^30 bytes, ~1GB
 const FILE_LIMIT: usize = 1073741824;
 
@@ -314,7 +316,7 @@ impl OpenOptions {
         }
 
         debug!("file {} with flags {} opened", path, flags);
-        Ok(File::new(self.fs, b))
+        Ok(File::new(self.fs, b, path))
     }
 }
 
@@ -336,6 +338,7 @@ impl OpenOptions {
 pub struct File {
     fs: hdfsFS,
     f: hdfsFile,
+    path: String,
 }
 
 /// HDFS's client handle is thread safe.
@@ -354,8 +357,12 @@ impl Drop for File {
 }
 
 impl File {
-    pub(crate) fn new(fs: hdfsFS, f: hdfsFile) -> Self {
-        File { fs, f }
+    pub(crate) fn new(fs: hdfsFS, f: hdfsFile, path: &str) -> Self {
+        File {
+            fs,
+            f,
+            path: path.to_string(),
+        }
     }
 
     /// Works only for files opened in read-only mode.
@@ -406,12 +413,17 @@ impl Seek for File {
                 self.inner_seek(n as i64)?;
                 Ok(n)
             }
-            SeekFrom::End(_) => Err(Error::new(ErrorKind::Other, "not supported seek operation")),
             SeekFrom::Current(n) => {
                 let current = self.tell()?;
                 let offset = (current + n) as u64;
                 self.inner_seek(offset as i64)?;
                 Ok(offset)
+            }
+            SeekFrom::End(n) => {
+                let meta = Client::new(self.fs).metadata(&self.path)?;
+                let offset = meta.len() as i64 + n;
+                self.inner_seek(offset)?;
+                Ok(offset as u64)
             }
         }
     }

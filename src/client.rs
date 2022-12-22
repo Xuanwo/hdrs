@@ -104,6 +104,10 @@ impl Client {
         Ok(Client { fs })
     }
 
+    pub(crate) fn new(fs: hdfsFS) -> Self {
+        Self { fs }
+    }
+
     /// Open will create a stream builder for later IO operations.
     ///
     /// # Examples
