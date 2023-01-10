@@ -5,8 +5,8 @@ use errno::{set_errno, Errno};
 use hdfs_sys::*;
 use log::debug;
 
-use crate::file::OpenOptions;
 use crate::metadata::Metadata;
+use crate::OpenOptions;
 use crate::Readdir;
 
 /// Client holds the underlying connection to hdfs clusters.
