@@ -32,7 +32,14 @@ pub use client::Client;
 
 mod file;
 pub use file::File;
-pub use file::OpenOptions;
+
+#[cfg(feature = "async_file")]
+mod async_file;
+#[cfg(feature = "async_file")]
+pub use async_file::AsyncFile;
+
+mod open_options;
+pub use open_options::OpenOptions;
 
 mod metadata;
 pub use metadata::Metadata;
