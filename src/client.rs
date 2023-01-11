@@ -363,7 +363,8 @@ fn prepare_env() -> io::Result<()> {
     }
 
     // Retrieve all jars under HADOOP_HOME.
-    let mut jars = Vec::new();
+    let mut classpaths = Vec::new();
+    classpaths.push(format!("{hadoop_home}/etc/hadoop/"));
 
     let paths = vec![
         format!("{hadoop_home}/share/hadoop/common"),
@@ -376,13 +377,13 @@ fn prepare_env() -> io::Result<()> {
             let p = d?.path();
             if let Some(ext) = p.extension() {
                 if ext == "jar" {
-                    jars.push(p.to_string_lossy().to_string());
+                    classpaths.push(p.to_string_lossy().to_string());
                 }
             }
         }
     }
 
-    env::set_var("CLASSPATH", jars.join(":"));
+    env::set_var("CLASSPATH", classpaths.join(":"));
     Ok(())
 }
 
