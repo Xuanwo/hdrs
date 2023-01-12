@@ -411,7 +411,7 @@ mod tests {
 
         let path = uuid::Uuid::new_v4().to_string();
 
-        let _ = fs.open_file().read(true).open(&format!("/tmp/{path}"));
+        let _ = fs.open_file().write(true).open(&format!("/tmp/{path}"));
     }
 
     #[test]
