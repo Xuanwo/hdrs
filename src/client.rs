@@ -373,7 +373,7 @@ fn prepare_env() -> io::Result<()> {
         format!("{hadoop_home}/share/hadoop/hdfs/lib"),
     ];
     for path in paths {
-        for d in fs::read_dir(&path)? {
+        for d in fs::read_dir(path)? {
             let p = d?.path();
             if let Some(ext) = p.extension() {
                 if ext == "jar" {
