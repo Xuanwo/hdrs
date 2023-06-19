@@ -36,6 +36,66 @@ pub struct Client {
     fs: hdfsFS,
 }
 
+/// The builder of connecting to hdfs clusters.
+pub struct ClientBuilder<'a> {
+    name_node: &'a str,
+    user: Option<&'a str>,
+    kerberos_ticket_cache_path: Option<&'a str>
+}
+
+impl<'a> ClientBuilder<'a> {
+    pub fn new(name_node: &'a str) -> ClientBuilder {
+        ClientBuilder {
+            name_node,
+            user: None,
+            kerberos_ticket_cache_path: None
+        }
+    }
+
+    pub fn with_user(&mut self, user: &'a str) -> &'a mut ClientBuilder {
+        self.user = Some(user);
+        self
+    }
+
+    pub fn with_kerberos_ticket_cache_path(&mut self, kerberos_ticket_cache_path: &'a str) -> &'a mut ClientBuilder {
+        self.kerberos_ticket_cache_path = Some(kerberos_ticket_cache_path);
+        self
+    }
+
+    pub fn connect(&self) -> io::Result<Client> {
+        prepare_env()?;
+        set_errno(Errno(0));
+
+        debug!("connect name node {}", self.name_node);
+
+        let fs = unsafe {
+            let builder = hdfsNewBuilder();
+
+            let name_node = CString::new(self.name_node)?;
+            hdfsBuilderSetNameNode(builder, name_node.as_ptr());
+
+            if self.kerberos_ticket_cache_path.is_some() {
+                let ticket_cache_path = CString::new(self.kerberos_ticket_cache_path.unwrap())?;
+                hdfsBuilderSetKerbTicketCachePath(builder, ticket_cache_path.as_ptr());
+            }
+
+            if self.user.is_some() {
+                let user = CString::new(self.user.unwrap())?;
+                hdfsBuilderSetUserName(builder, user.as_ptr());
+            }
+
+            hdfsBuilderConnect(builder)
+        };
+
+        if fs.is_null() {
+            return Err(io::Error::last_os_error());
+        }
+
+        debug!("name node {} connected", self.name_node);
+        Ok(Client::new(fs))
+    }
+}
+
 /// HDFS's client handle is thread safe.
 unsafe impl Send for Client {}
 unsafe impl Sync for Client {}
