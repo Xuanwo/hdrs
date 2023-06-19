@@ -147,7 +147,7 @@ impl futures::AsyncWrite for AsyncFile {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::client::Client;
+    use crate::client::{Client, ClientBuilder};
     use futures::AsyncReadExt;
     use futures::AsyncSeekExt;
     use futures::AsyncWriteExt;
@@ -156,7 +156,7 @@ mod tests {
     async fn test_file_build() {
         let _ = env_logger::try_init();
 
-        let fs = Client::connect("default").expect("init success");
+        let fs = ClientBuilder::new("default").connect().expect("init success");
 
         let path = uuid::Uuid::new_v4().to_string();
 
@@ -173,7 +173,7 @@ mod tests {
     async fn test_file_write() {
         let _ = env_logger::try_init();
 
-        let fs = Client::connect("default").expect("init success");
+        let fs = ClientBuilder::new("default").connect().expect("init success");
 
         let path = uuid::Uuid::new_v4().to_string();
 
@@ -196,7 +196,7 @@ mod tests {
     async fn test_file_read() {
         let _ = env_logger::try_init();
 
-        let fs = Client::connect("default").expect("init success");
+        let fs = ClientBuilder::new("default").connect().expect("init success");
 
         let path = uuid::Uuid::new_v4().to_string();
 

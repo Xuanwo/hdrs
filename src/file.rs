@@ -18,7 +18,7 @@ const FILE_LIMIT: usize = 1073741824;
 /// ```no_run
 /// use hdrs::Client;
 ///
-/// let fs = Client::connect("default").expect("client connect succeed");
+/// let fs = ClientBuilder::new("default").with_user("default").with_kerberos_ticket_cache_path("/tmp/krb5_111").connect().expect("client connect succeed");
 /// let mut f = fs
 /// .open_file().read(true).open("/tmp/hello.txt")
 ///     .expect("must open success");
@@ -221,13 +221,13 @@ impl Write for &File {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::client::Client;
+    use crate::client::{Client, ClientBuilder};
 
     #[test]
     fn test_file_build() {
         let _ = env_logger::try_init();
 
-        let fs = Client::connect("default").expect("init success");
+        let fs = ClientBuilder::new("default").connect().expect("init success");
 
         let path = uuid::Uuid::new_v4().to_string();
 
@@ -246,7 +246,7 @@ mod tests {
     fn test_file_write() {
         let _ = env_logger::try_init();
 
-        let fs = Client::connect("default").expect("init success");
+        let fs = ClientBuilder::new("default").connect().expect("init success");
 
         let path = uuid::Uuid::new_v4().to_string();
 
@@ -267,7 +267,7 @@ mod tests {
     fn test_file_read() {
         let _ = env_logger::try_init();
 
-        let fs = Client::connect("default").expect("init success");
+        let fs = ClientBuilder::new("default").connect().expect("init success");
 
         let path = uuid::Uuid::new_v4().to_string();
 

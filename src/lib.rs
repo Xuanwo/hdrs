@@ -8,7 +8,7 @@
 //! use hdrs::Client;
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! let fs = Client::connect("default")?;
+//! let fs = ClientBuilder::new("default").connect()?;
 //!
 //! let mut f = fs.open_file().write(true).create(true).open("/tmp/hello.txt")?;
 //! let n = f.write("Hello, World!".as_bytes())?;
@@ -29,6 +29,7 @@
 
 mod client;
 pub use client::Client;
+pub use client::ClientBuilder;
 
 mod file;
 pub use file::File;
