@@ -71,7 +71,7 @@ impl<'a> ClientBuilder<'a> {
         self
     }
 
-    pub fn connect(&self) -> io::Result<Client> {
+    pub fn connect(&mut self) -> io::Result<Client> {
         prepare_env()?;
         set_errno(Errno(0));
 
