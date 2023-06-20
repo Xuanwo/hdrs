@@ -113,7 +113,7 @@ impl ClientBuilder {
 
     /// Connect for existing ClientBuilder to get a hdfs client
     ///
-    /// Returns a [`hdrs::Client`]
+    /// Returns an [`io::Result`] if any error happens.
     ///
     /// # Examples
     ///
@@ -130,21 +130,21 @@ impl ClientBuilder {
         prepare_env()?;
         set_errno(Errno(0));
 
-        debug!("connect name node {}", self.name_node);
+        debug!("connect name node {}", &self.name_node);
 
         let fs = unsafe {
             let builder = hdfsNewBuilder();
 
-            let name_node = CString::new(self.name_node)?;
+            let name_node = CString::new(self.name_node.clone())?;
             hdfsBuilderSetNameNode(builder, name_node.as_ptr());
 
             if self.kerberos_ticket_cache_path.is_some() {
-                let ticket_cache_path = CString::new(self.kerberos_ticket_cache_path.unwrap())?;
+                let ticket_cache_path = CString::new(self.kerberos_ticket_cache_path.clone().unwrap())?;
                 hdfsBuilderSetKerbTicketCachePath(builder, ticket_cache_path.as_ptr());
             }
 
             if self.user.is_some() {
-                let user = CString::new(self.user.unwrap())?;
+                let user = CString::new(self.user.clone().unwrap())?;
                 hdfsBuilderSetUserName(builder, user.as_ptr());
             }
 
