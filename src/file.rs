@@ -16,7 +16,7 @@ const FILE_LIMIT: usize = 1073741824;
 /// # Examples
 ///
 /// ```no_run
-/// use hdrs::Client;
+/// use hdrs::{Client, ClientBuilder};
 ///
 /// let fs = ClientBuilder::new("default").with_user("default").with_kerberos_ticket_cache_path("/tmp/krb5_111").connect().expect("client connect succeed");
 /// let mut f = fs
