@@ -46,31 +46,86 @@ pub struct Client {
 ///
 /// let fs = ClientBuilder::new("default").with_user("default").with_kerberos_ticket_cache_path("/tmp/krb5_111").connect();
 /// ```
-pub struct ClientBuilder<'a> {
-    name_node: &'a str,
-    user: Option<&'a str>,
-    kerberos_ticket_cache_path: Option<&'a str>
+pub struct ClientBuilder {
+    name_node: String,
+    user: Option<String>,
+    kerberos_ticket_cache_path: Option<String>
 }
 
-impl<'a> ClientBuilder<'a> {
-    pub fn new(name_node: &'a str) -> ClientBuilder {
+impl ClientBuilder {
+
+    /// Create a ClientBuilder with name node
+    ///
+    /// Returns an [`hdrs::ClientBuilder`]
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use hdrs::ClientBuilder;
+    /// use hdrs::Client;
+    ///
+    /// let builder = ClientBuilder::new("default");
+    /// ```
+    ///
+    pub fn new(name_node: &str) -> ClientBuilder {
         ClientBuilder {
-            name_node,
+            name_node: name_node.to_string(),
             user: None,
             kerberos_ticket_cache_path: None
         }
     }
 
-    pub fn with_user(&mut self, user: &'a str) -> &'a mut ClientBuilder {
-        self.user = Some(user);
+    /// Set the user for existing ClientBuilder
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use hdrs::ClientBuilder;
+    /// use hdrs::Client;
+    ///
+    /// let mut builder = ClientBuilder::new("default");
+    /// builder.with_user("default");
+    /// let client = builder.connect();
+    /// ```
+    ///
+    pub fn with_user(&mut self, user: &str) -> &mut ClientBuilder {
+        self.user = Some(user.to_string());
         self
     }
 
-    pub fn with_kerberos_ticket_cache_path(&mut self, kerberos_ticket_cache_path: &'a str) -> &'a mut ClientBuilder {
-        self.kerberos_ticket_cache_path = Some(kerberos_ticket_cache_path);
+    /// Set the krb5 ticket cache path for existing ClientBuilder
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use hdrs::ClientBuilder;
+    /// use hdrs::Client;
+    ///
+    /// let mut builder = ClientBuilder::new("default");
+    /// builder.with_kerberos_ticket_cache_path("/tmp/krb5_1001");
+    /// let client = builder.connect();
+    /// ```
+    ///
+    pub fn with_kerberos_ticket_cache_path(&mut self, kerberos_ticket_cache_path: &str) -> &mut ClientBuilder {
+        self.kerberos_ticket_cache_path = Some(kerberos_ticket_cache_path.to_string());
         self
     }
 
+    /// Connect for existing ClientBuilder to get a hdfs client
+    ///
+    /// Returns a [`hdrs::Client`]
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use hdrs::ClientBuilder;
+    /// use hdrs::Client;
+    ///
+    /// let mut builder = ClientBuilder::new("default");
+    /// builder.with_kerberos_ticket_cache_path("/tmp/krb5_1001");
+    /// let client = builder.connect();
+    /// ```
+    ///
     pub fn connect(&mut self) -> io::Result<Client> {
         prepare_env()?;
         set_errno(Errno(0));
