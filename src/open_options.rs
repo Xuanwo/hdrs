@@ -15,7 +15,7 @@ use crate::File;
 /// Opening a file to read:
 ///
 /// ```no_run
-/// use hdrs::Client;
+/// use hdrs::{Client, ClientBuilder};
 ///
 /// let fs = ClientBuilder::new("default").with_user("default").with_kerberos_ticket_cache_path("/tmp/krb5_111").connect().expect("client connect succeed");
 /// let file = fs.open_file().read(true).open("foo.txt");
@@ -25,7 +25,7 @@ use crate::File;
 /// doesn't exist:
 ///
 /// ```no_run
-/// use hdrs::Client;
+/// use hdrs::{Client, ClientBuilder};
 ///
 /// let fs = ClientBuilder::new("default").with_user("default").with_kerberos_ticket_cache_path("/tmp/krb5_111").connect().expect("client connect succeed");
 /// let file = fs.open_file()
@@ -72,7 +72,7 @@ impl OpenOptions {
     /// # Examples
     ///
     /// ```no_run
-    /// use hdrs::Client;
+    /// use hdrs::{Client, ClientBuilder};
     ///
     /// let fs = ClientBuilder::new("default").with_user("default").with_kerberos_ticket_cache_path("/tmp/krb5_111").connect().expect("client connect succeed");
     /// let file = fs.open_file().read(true).open("foo.txt");
@@ -93,7 +93,7 @@ impl OpenOptions {
     /// # Examples
     ///
     /// ```no_run
-    /// use hdrs::Client;
+    /// use hdrs::{Client, ClientBuilder};
     ///
     /// let fs = ClientBuilder::new("default").with_user("default").with_kerberos_ticket_cache_path("/tmp/krb5_111").connect().expect("client connect succeed");
     /// let file = fs.open_file().write(true).open("foo.txt");
@@ -134,7 +134,7 @@ impl OpenOptions {
     /// # Examples
     ///
     /// ```no_run
-    /// use hdrs::Client;
+    /// use hdrs::{Client, ClientBuilder};
     ///
     /// let fs = ClientBuilder::new("default").with_user("default").with_kerberos_ticket_cache_path("/tmp/krb5_111").connect().expect("client connect succeed");
     /// let file = fs.open_file().append(true).open("foo.txt");
@@ -154,7 +154,7 @@ impl OpenOptions {
     /// # Examples
     ///
     /// ```no_run
-    /// use hdrs::Client;
+    /// use hdrs::{Client, ClientBuilder};
     ///
     /// let fs = ClientBuilder::new("default").with_user("default").with_kerberos_ticket_cache_path("/tmp/krb5_111").connect().expect("client connect succeed");
     /// let file = fs.open_file().truncate(true).open("foo.txt");
@@ -172,7 +172,7 @@ impl OpenOptions {
     /// # Examples
     ///
     /// ```no_run
-    /// use hdrs::Client;
+    /// use hdrs::{Client, ClientBuilder};
     ///
     /// let fs = ClientBuilder::new("default").with_user("default").with_kerberos_ticket_cache_path("/tmp/krb5_111").connect().expect("client connect succeed");
     /// let file = fs.open_file().create(true).open("foo.txt");
@@ -203,7 +203,7 @@ impl OpenOptions {
     /// # Examples
     ///
     /// ```no_run
-    /// use hdrs::Client;
+    /// use hdrs::{Client, ClientBuilder};
     ///
     /// let fs = ClientBuilder::new("default").with_user("default").with_kerberos_ticket_cache_path("/tmp/krb5_111").connect().expect("client connect succeed");
     /// let file = fs.open_file().write(true)
@@ -285,7 +285,7 @@ impl OpenOptions {
     /// # Examples
     ///
     /// ```no_run
-    /// use hdrs::Client;
+    /// use hdrs::{Client, ClientBuilder};
     ///
     /// let fs = ClientBuilder::new("default").with_user("default").with_kerberos_ticket_cache_path("/tmp/krb5_111").connect().expect("client connect succeed");
     /// let file = fs.open_file().write(true).open("foo.txt");
