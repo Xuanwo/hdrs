@@ -27,52 +27,80 @@ jobs:
       - name: Clippy with all features
         run: cargo clippy --all-features --all-targets -- -D warnings
 
-  test:
+  test-default:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        hdfs-version: ["2.10.1", "3.2.3", "3.3.2"]
-
     steps:
       - uses: actions/checkout@v3
-      - name: Checkout python env
-        uses: actions/setup-python@v4.6.1
-        with:
-          python-version: "3.8"
-      - name: Checkout java env
+
+      - name: Setup java env
         uses: actions/setup-java@v3
         with:
           distribution: temurin
           java-version: "11"
-      - name: Setup-hdfs env
-        uses: beyondstorage/setup-hdfs@master
-        with:
-          hdfs-version: ${{ matrix.hdfs-version }}
-
-      - name: Wait for hdfs startup
+      - name: Setup hadoop env
+        shell: bash
         run: |
-          curl --retry 30 --retry-delay 1 --retry-connrefused http://${HDFS_NAMENODE_HTTP_ADDR}
+          curl -LsSf https://dlcdn.apache.org/hadoop/common/hadoop-3.3.5/hadoop-3.3.5.tar.gz | tar zxf - -C /home/runner
 
       - name: Test
-        run: |
-          export CLASSPATH=$(find $HADOOP_HOME -iname "*.jar" | xargs echo | tr ' ' ':')
-          cargo test -- --nocapture
-        env:
-          RUST_LOG: DEBUG
-          RUST_BACKTRACE: full
-          HDRS_TEST: on
-          HDRS_NAMENODE: hdfs://${{ env.HDFS_NAMENODE_ADDR }}
-          HDRS_WORKDIR: /
-          LD_LIBRARY_PATH: ${{ env.JAVA_HOME }}/lib/server:${{ env.LD_LIBRARY_PATH }}
-
-      - name: Test with all features
+        shell: bash
         run: |
           export CLASSPATH=$(find $HADOOP_HOME -iname "*.jar" | xargs echo | tr ' ' ':')
           cargo test --all-features -- --nocapture
         env:
-          RUST_LOG: DEBUG
-          RUST_BACKTRACE: full
-          HDRS_TEST: on
-          HDRS_NAMENODE: hdfs://${{ env.HDFS_NAMENODE_ADDR }}
-          HDRS_WORKDIR: /
+          HADOOP_HOME: /home/runner/hadoop-3.3.5
           LD_LIBRARY_PATH: ${{ env.JAVA_HOME }}/lib/server:${{ env.LD_LIBRARY_PATH }}
+          HDRS_TEST: on
+          HDRS_NAMENODE: default
+          HDRS_WORKDIR: /tmp/hdrs/
+
+  test-cluster:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Configure Hdfs
+        # namenode will use ports: 9870, 9000, 8020
+        # datanode will use ports: 9864
+        run: |
+          docker run -d \
+            --name namenode \
+            --network host \
+            -e CLUSTER_NAME=test \
+            -e WEBHDFS_CONF_dfs_webhdfs_enabled=true \
+            -e CORE_CONF_hadoop_http_staticuser_user=root \
+            -e HDFS_CONF_dfs_permissions_enabled=false \
+            bde2020/hadoop-namenode:2.0.0-hadoop3.1.3-java8
+
+          docker run -d \
+            --name datanode \
+            --network host \
+            -e CLUSTER_NAME=test \
+            -e WEBHDFS_CONF_dfs_webhdfs_enabled=true \
+            -e CORE_CONF_hadoop_http_staticuser_user=root \
+            -e HDFS_CONF_dfs_permissions_enabled=false \
+            bde2020/hadoop-datanode:2.0.0-hadoop3.1.3-java8
+
+          curl --retry 30 --retry-delay 1 --retry-connrefused http://localhost:9870
+
+      - name: Setup java env
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: "11"
+      - name: Setup hadoop env
+        shell: bash
+        run: |
+          curl -LsSf https://archive.apache.org/dist/hadoop/common/hadoop-3.1.3/hadoop-3.1.3.tar.gz | tar zxf - -C /home/runner
+
+      - name: Test
+        shell: bash
+        run: |
+          export CLASSPATH=$(find $HADOOP_HOME -iname "*.jar" | xargs echo | tr ' ' ':')
+          cargo test --all-features -- --nocapture
+        env:
+          HADOOP_HOME: /home/runner/hadoop-3.1.3
+          LD_LIBRARY_PATH: ${{ env.JAVA_HOME }}/lib/server:${{ env.LD_LIBRARY_PATH }}
+          HDRS_TEST: on
+          HDRS_NAMENODE: hdfs://localhost:8020
+          HDRS_WORKDIR: /tmp/hdrs/
