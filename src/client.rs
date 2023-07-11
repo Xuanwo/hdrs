@@ -42,7 +42,7 @@ pub struct Client {
 ///
 /// # Examples
 ///
-/// ```
+/// ```no_run
 /// use hdrs::{Client, ClientBuilder};
 ///
 /// let fs = ClientBuilder::new("default")
@@ -63,7 +63,7 @@ impl ClientBuilder {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use hdrs::{Client, ClientBuilder};
     ///
     /// let builder = ClientBuilder::new("default");
@@ -80,7 +80,7 @@ impl ClientBuilder {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use hdrs::{Client, ClientBuilder};
     ///
     /// let client = ClientBuilder::new("default").with_user("default").connect();
@@ -94,7 +94,7 @@ impl ClientBuilder {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use hdrs::{Client, ClientBuilder};
     ///
     /// let mut client = ClientBuilder::new("default")
@@ -115,7 +115,7 @@ impl ClientBuilder {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use hdrs::{Client, ClientBuilder};
     ///
     /// let mut client = ClientBuilder::new("default").connect();
@@ -168,7 +168,7 @@ impl Client {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use hdrs::{Client, ClientBuilder};
     ///
     /// let fs = ClientBuilder::new("default")
@@ -191,7 +191,6 @@ impl Client {
     ///
     /// let fs = ClientBuilder::new("default")
     ///     .with_user("default")
-    ///     .with_kerberos_ticket_cache_path("/tmp/krb5_111")
     ///     .connect()
     ///     .expect("client connect succeed");
     /// let _ = fs.remove_file("/tmp/hello.txt");
@@ -223,7 +222,6 @@ impl Client {
     ///
     /// let fs = ClientBuilder::new("default")
     ///     .with_user("default")
-    ///     .with_kerberos_ticket_cache_path("/tmp/krb5_111")
     ///     .connect()
     ///     .expect("client connect succeed");
     /// let _ = fs.rename_file("/tmp/hello.txt._COPY_", "/tmp/hello.txt");
@@ -254,7 +252,6 @@ impl Client {
     ///
     /// let fs = ClientBuilder::new("default")
     ///     .with_user("default")
-    ///     .with_kerberos_ticket_cache_path("/tmp/krb5_111")
     ///     .connect()
     ///     .expect("client connect succeed");
     /// let _ = fs.remove_dir("/tmp/xxx");
@@ -284,7 +281,6 @@ impl Client {
     ///
     /// let fs = ClientBuilder::new("default")
     ///     .with_user("default")
-    ///     .with_kerberos_ticket_cache_path("/tmp/krb5_111")
     ///     .connect()
     ///     .expect("client connect succeed");
     /// let _ = fs.remove_dir_all("/tmp/xxx/");
@@ -316,7 +312,6 @@ impl Client {
     ///
     /// let fs = ClientBuilder::new("default")
     ///     .with_user("default")
-    ///     .with_kerberos_ticket_cache_path("/tmp/krb5_111")
     ///     .connect()
     ///     .expect("client connect succeed");
     /// let fi = fs.metadata("/tmp/hello.txt");
@@ -331,7 +326,6 @@ impl Client {
     ///
     /// let fs = ClientBuilder::new("default")
     ///     .with_user("default")
-    ///     .with_kerberos_ticket_cache_path("/tmp/krb5_111")
     ///     .connect()
     ///     .expect("client connect succeed");
     /// let fi = fs.metadata("/tmp/not-exist.txt");
@@ -368,7 +362,6 @@ impl Client {
     ///
     /// let fs = ClientBuilder::new("default")
     ///     .with_user("default")
-    ///     .with_kerberos_ticket_cache_path("/tmp/krb5_111")
     ///     .connect()
     ///     .expect("client connect succeed");
     /// let fis = fs.read_dir("/tmp/hello/");
@@ -422,7 +415,6 @@ impl Client {
     ///
     /// let fs = ClientBuilder::new("default")
     ///     .with_user("default")
-    ///     .with_kerberos_ticket_cache_path("/tmp/krb5_111")
     ///     .connect()
     ///     .expect("client connect succeed");
     /// let _ = fs.create_dir("/tmp");
