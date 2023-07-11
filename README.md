@@ -45,16 +45,11 @@ export LD_LIBRARY_PATH=${JAVA_HOME}/lib/server:${LD_LIBRARY_PATH}
 
 `hdrs` depends on [hdfs-sys](https://github.com/Xuanwo/hdfs-sys) which uses JNI to call functions provided by jars that provided by hadoop releases.
 
-Please also make sure `HADOOP_HOME`, `LD_LIBRARY_PATH` is set correctly during runtime:
+Please also make sure `HADOOP_HOME`, `LD_LIBRARY_PATH`, `CLASSPATH` is set correctly during runtime:
 
 ```shell
 export HADOOP_HOME=/path/to/hadoop
 export LD_LIBRARY_PATH=${JAVA_HOME}/lib/server:${LD_LIBRARY_PATH}
-```
-
-`hdrs` will detect `CLASSPATH` based on `HADOOP_HOME`, users can override the behavior via setting `CLASSPATH` manually:
-
-```shell
 export CLASSPATH=$(find $HADOOP_HOME -iname "*.jar" | xargs echo | tr ' ' ':')
 ```
 

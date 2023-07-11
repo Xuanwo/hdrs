@@ -1,5 +1,5 @@
 use std::ffi::CString;
-use std::{env, fs, io};
+use std::io;
 
 use errno::{set_errno, Errno};
 use hdfs_sys::*;
@@ -134,7 +134,6 @@ impl ClientBuilder {
     /// let mut client = ClientBuilder::new("default").connect();
     /// ```
     pub fn connect(self) -> io::Result<Client> {
-        prepare_env()?;
         set_errno(Errno(0));
 
         debug!("connect name node {}", &self.name_node);
@@ -443,43 +442,6 @@ impl Client {
 
         Ok(())
     }
-}
-
-fn prepare_env() -> io::Result<()> {
-    let hadoop_home = env::var("HADOOP_HOME").map_err(|e| {
-        io::Error::new(
-            io::ErrorKind::Other,
-            format!("HADOOP_HOME is not set: {}", e),
-        )
-    })?;
-
-    // If `CLASSPATH` is set, we can return directly.
-    if env::var("CLASSPATH").is_ok() {
-        return Ok(());
-    }
-
-    // Retrieve all jars under HADOOP_HOME.
-    let mut jars = Vec::new();
-
-    let paths = vec![
-        format!("{hadoop_home}/share/hadoop/common"),
-        format!("{hadoop_home}/share/hadoop/common/lib"),
-        format!("{hadoop_home}/share/hadoop/hdfs"),
-        format!("{hadoop_home}/share/hadoop/hdfs/lib"),
-    ];
-    for path in paths {
-        for d in fs::read_dir(&path)? {
-            let p = d?.path();
-            if let Some(ext) = p.extension() {
-                if ext == "jar" {
-                    jars.push(p.to_string_lossy().to_string());
-                }
-            }
-        }
-    }
-
-    env::set_var("CLASSPATH", jars.join(":"));
-    Ok(())
 }
 
 #[cfg(test)]
