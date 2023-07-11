@@ -49,6 +49,10 @@ jobs:
         with:
           hdfs-version: ${{ matrix.hdfs-version }}
 
+      - name: Wait for hdfs startup
+        run: |
+          curl --retry 30 --retry-delay 1 --retry-connrefused http://${HDFS_NAMENODE_HTTP_ADDR}
+
       - name: Test
         run: |
           export CLASSPATH=$(find $HADOOP_HOME -iname "*.jar" | xargs echo | tr ' ' ':')
