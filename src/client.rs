@@ -25,7 +25,7 @@ use crate::{OpenOptions, Readdir};
 ///
 /// # Examples
 ///
-/// ```
+/// ```no_run
 /// use hdrs::{Client, ClientBuilder};
 ///
 /// let fs = ClientBuilder::new("default")
