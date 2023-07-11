@@ -1,11 +1,11 @@
-use async_lock::Mutex;
-use blocking::Unblock;
-use futures::{ready, AsyncSeek};
-use std::io::Result;
-use std::io::{Read, Seek, SeekFrom, Write};
+use std::io::{Read, Result, Seek, SeekFrom, Write};
 use std::pin::Pin;
 use std::sync::Arc;
 use std::task::{Context, Poll};
+
+use async_lock::Mutex;
+use blocking::Unblock;
+use futures::{ready, AsyncSeek};
 
 use crate::File;
 
@@ -146,17 +146,18 @@ impl futures::AsyncWrite for AsyncFile {
 
 #[cfg(test)]
 mod tests {
+    use futures::{AsyncReadExt, AsyncSeekExt, AsyncWriteExt};
+
     use super::*;
-    use crate::client::Client;
-    use futures::AsyncReadExt;
-    use futures::AsyncSeekExt;
-    use futures::AsyncWriteExt;
+    use crate::client::ClientBuilder;
 
     #[tokio::test]
     async fn test_file_build() {
         let _ = env_logger::try_init();
 
-        let fs = Client::connect("default").expect("init success");
+        let fs = ClientBuilder::new("default")
+            .connect()
+            .expect("init success");
 
         let path = uuid::Uuid::new_v4().to_string();
 
@@ -173,7 +174,9 @@ mod tests {
     async fn test_file_write() {
         let _ = env_logger::try_init();
 
-        let fs = Client::connect("default").expect("init success");
+        let fs = ClientBuilder::new("default")
+            .connect()
+            .expect("init success");
 
         let path = uuid::Uuid::new_v4().to_string();
 
@@ -196,7 +199,9 @@ mod tests {
     async fn test_file_read() {
         let _ = env_logger::try_init();
 
-        let fs = Client::connect("default").expect("init success");
+        let fs = ClientBuilder::new("default")
+            .connect()
+            .expect("init success");
 
         let path = uuid::Uuid::new_v4().to_string();
 

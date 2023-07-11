@@ -1,7 +1,8 @@
-use hdfs_sys::*;
-use log::debug;
 use std::ffi::CString;
 use std::io::{Error, Result};
+
+use hdfs_sys::*;
+use log::debug;
 
 use crate::File;
 
@@ -15,9 +16,13 @@ use crate::File;
 /// Opening a file to read:
 ///
 /// ```no_run
-/// use hdrs::Client;
+/// use hdrs::{Client, ClientBuilder};
 ///
-/// let fs = Client::connect("default").expect("client connect succeed");
+/// let fs = ClientBuilder::new("default")
+///     .with_user("default")
+///     .with_kerberos_ticket_cache_path("/tmp/krb5_111")
+///     .connect()
+///     .expect("client connect succeed");
 /// let file = fs.open_file().read(true).open("foo.txt");
 /// ```
 ///
@@ -25,14 +30,19 @@ use crate::File;
 /// doesn't exist:
 ///
 /// ```no_run
-/// use hdrs::Client;
+/// use hdrs::{Client, ClientBuilder};
 ///
-/// let fs = Client::connect("default").expect("client connect succeed");
-/// let file = fs.open_file()
-///             .read(true)
-///             .write(true)
-///             .create(true)
-///             .open("foo.txt");
+/// let fs = ClientBuilder::new("default")
+///     .with_user("default")
+///     .with_kerberos_ticket_cache_path("/tmp/krb5_111")
+///     .connect()
+///     .expect("client connect succeed");
+/// let file = fs
+///     .open_file()
+///     .read(true)
+///     .write(true)
+///     .create(true)
+///     .open("foo.txt");
 /// ```
 #[derive(Debug, Clone)]
 pub struct OpenOptions {
@@ -72,9 +82,13 @@ impl OpenOptions {
     /// # Examples
     ///
     /// ```no_run
-    /// use hdrs::Client;
+    /// use hdrs::{Client, ClientBuilder};
     ///
-    /// let fs = Client::connect("default").expect("client connect succeed");
+    /// let fs = ClientBuilder::new("default")
+    ///     .with_user("default")
+    ///     .with_kerberos_ticket_cache_path("/tmp/krb5_111")
+    ///     .connect()
+    ///     .expect("client connect succeed");
     /// let file = fs.open_file().read(true).open("foo.txt");
     /// ```
     pub fn read(&mut self, read: bool) -> &mut Self {
@@ -93,9 +107,13 @@ impl OpenOptions {
     /// # Examples
     ///
     /// ```no_run
-    /// use hdrs::Client;
+    /// use hdrs::{Client, ClientBuilder};
     ///
-    /// let fs = Client::connect("default").expect("client connect succeed");
+    /// let fs = ClientBuilder::new("default")
+    ///     .with_user("default")
+    ///     .with_kerberos_ticket_cache_path("/tmp/krb5_111")
+    ///     .connect()
+    ///     .expect("client connect succeed");
     /// let file = fs.open_file().write(true).open("foo.txt");
     /// ```
     pub fn write(&mut self, write: bool) -> &mut Self {
@@ -134,9 +152,13 @@ impl OpenOptions {
     /// # Examples
     ///
     /// ```no_run
-    /// use hdrs::Client;
+    /// use hdrs::{Client, ClientBuilder};
     ///
-    /// let fs = Client::connect("default").expect("client connect succeed");
+    /// let fs = ClientBuilder::new("default")
+    ///     .with_user("default")
+    ///     .with_kerberos_ticket_cache_path("/tmp/krb5_111")
+    ///     .connect()
+    ///     .expect("client connect succeed");
     /// let file = fs.open_file().append(true).open("foo.txt");
     /// ```
     pub fn append(&mut self, append: bool) -> &mut Self {
@@ -154,9 +176,13 @@ impl OpenOptions {
     /// # Examples
     ///
     /// ```no_run
-    /// use hdrs::Client;
+    /// use hdrs::{Client, ClientBuilder};
     ///
-    /// let fs = Client::connect("default").expect("client connect succeed");
+    /// let fs = ClientBuilder::new("default")
+    ///     .with_user("default")
+    ///     .with_kerberos_ticket_cache_path("/tmp/krb5_111")
+    ///     .connect()
+    ///     .expect("client connect succeed");
     /// let file = fs.open_file().truncate(true).open("foo.txt");
     /// ```
     pub fn truncate(&mut self, truncate: bool) -> &mut Self {
@@ -172,9 +198,13 @@ impl OpenOptions {
     /// # Examples
     ///
     /// ```no_run
-    /// use hdrs::Client;
+    /// use hdrs::{Client, ClientBuilder};
     ///
-    /// let fs = Client::connect("default").expect("client connect succeed");
+    /// let fs = ClientBuilder::new("default")
+    ///     .with_user("default")
+    ///     .with_kerberos_ticket_cache_path("/tmp/krb5_111")
+    ///     .connect()
+    ///     .expect("client connect succeed");
     /// let file = fs.open_file().create(true).open("foo.txt");
     /// ```
     pub fn create(&mut self, create: bool) -> &mut Self {
@@ -203,12 +233,14 @@ impl OpenOptions {
     /// # Examples
     ///
     /// ```no_run
-    /// use hdrs::Client;
+    /// use hdrs::{Client, ClientBuilder};
     ///
-    /// let fs = Client::connect("default").expect("client connect succeed");
-    /// let file = fs.open_file().write(true)
-    ///                              .create_new(true)
-    ///                              .open("foo.txt");
+    /// let fs = ClientBuilder::new("default")
+    ///     .with_user("default")
+    ///     .with_kerberos_ticket_cache_path("/tmp/krb5_111")
+    ///     .connect()
+    ///     .expect("client connect succeed");
+    /// let file = fs.open_file().write(true).create_new(true).open("foo.txt");
     /// ```
     pub fn create_new(&mut self, create_new: bool) -> &mut Self {
         self.create = create_new;
@@ -285,9 +317,13 @@ impl OpenOptions {
     /// # Examples
     ///
     /// ```no_run
-    /// use hdrs::Client;
+    /// use hdrs::{Client, ClientBuilder};
     ///
-    /// let fs = Client::connect("default").expect("client connect succeed");
+    /// let fs = ClientBuilder::new("default")
+    ///     .with_user("default")
+    ///     .with_kerberos_ticket_cache_path("/tmp/krb5_111")
+    ///     .connect()
+    ///     .expect("client connect succeed");
     /// let file = fs.open_file().write(true).open("foo.txt");
     /// ```
     ///

@@ -1,7 +1,7 @@
 use std::{env, io};
 
 use anyhow::Result;
-use hdrs::Client;
+use hdrs::ClientBuilder;
 use log::debug;
 use rand::{Rng, RngCore};
 
@@ -11,7 +11,7 @@ fn test_connect() -> Result<()> {
 
     let name_node = env::var("HDRS_NAMENODE")?;
 
-    let fs = Client::connect(&name_node);
+    let fs = ClientBuilder::new(&name_node).connect();
     assert!(fs.is_ok());
 
     Ok(())
@@ -29,7 +29,7 @@ fn test_mkdir() -> Result<()> {
     let name_node = env::var("HDRS_NAMENODE")?;
     let work_dir = env::var("HDRS_WORKDIR").unwrap_or_default();
 
-    let fs = Client::connect(&name_node)?;
+    let fs = ClientBuilder::new(&name_node).connect()?;
 
     let path = format!("{work_dir}{}", uuid::Uuid::new_v4());
 
@@ -51,7 +51,7 @@ fn test_read_dir() -> Result<()> {
     let name_node = env::var("HDRS_NAMENODE")?;
     let work_dir = env::var("HDRS_WORKDIR").unwrap_or_default();
 
-    let fs = Client::connect(&name_node)?;
+    let fs = ClientBuilder::new(&name_node).connect()?;
 
     let path = format!("{work_dir}{}", uuid::Uuid::new_v4());
 
@@ -73,7 +73,7 @@ fn test_rename() -> Result<()> {
     let name_node = env::var("HDRS_NAMENODE")?;
     let work_dir = env::var("HDRS_WORKDIR").unwrap_or_default();
 
-    let fs = Client::connect(&name_node)?;
+    let fs = ClientBuilder::new(&name_node).connect()?;
 
     let path = format!("{work_dir}{}", uuid::Uuid::new_v4());
     {
@@ -120,7 +120,7 @@ fn test_file() -> Result<()> {
     let name_node = env::var("HDRS_NAMENODE")?;
     let work_dir = env::var("HDRS_WORKDIR").unwrap_or_default();
 
-    let fs = Client::connect(&name_node)?;
+    let fs = ClientBuilder::new(&name_node).connect()?;
 
     let path = format!("{work_dir}{}", uuid::Uuid::new_v4());
 
@@ -214,7 +214,7 @@ async fn test_tokio_file() -> Result<()> {
     let name_node = env::var("HDRS_NAMENODE")?;
     let work_dir = env::var("HDRS_WORKDIR").unwrap_or_default();
 
-    let fs = Client::connect(&name_node)?;
+    let fs = ClientBuilder::new(&name_node).connect()?;
 
     let path = format!("{work_dir}{}", uuid::Uuid::new_v4());
 
@@ -297,7 +297,7 @@ async fn test_futures_file() -> Result<()> {
     let name_node = env::var("HDRS_NAMENODE")?;
     let work_dir = env::var("HDRS_WORKDIR").unwrap_or_default();
 
-    let fs = Client::connect(&name_node)?;
+    let fs = ClientBuilder::new(&name_node).connect()?;
 
     let path = format!("{work_dir}{}", uuid::Uuid::new_v4());
 
