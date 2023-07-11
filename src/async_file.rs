@@ -3,8 +3,8 @@ use std::pin::Pin;
 use std::sync::Arc;
 use std::task::{Context, Poll};
 
-use async_lock::Mutex;
 use blocking::Unblock;
+use futures::lock::Mutex;
 use futures::{ready, AsyncSeek};
 
 use crate::File;
