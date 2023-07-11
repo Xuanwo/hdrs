@@ -61,6 +61,19 @@ impl ClientBuilder {
     ///
     /// Returns an [`hdrs::ClientBuilder`]
     ///
+    /// # Notes
+    ///
+    /// The NameNode to use.
+    ///
+    /// If the string given is profile name like 'default', the related
+    /// NameNode configuration will be used (from the XML configuration
+    /// files).
+    ///
+    /// If the string starts with a protocol type such as `file://` or
+    /// `hdfs://`, this protocol type will be used. If not, the `hdfs://`
+    /// protocol type will be used. You may specify a NameNode port in the
+    /// usual way by passing a string of the format `hdfs://<hostname>:<port>`.
+    ///
     /// # Examples
     ///
     /// ```no_run
@@ -131,7 +144,6 @@ impl ClientBuilder {
 
             let name_node = CString::new(self.name_node.as_bytes())?;
             hdfsBuilderSetNameNode(builder, name_node.as_ptr());
-            hdfsBuilderSetNameNodePort(builder, 0);
 
             if let Some(v) = self.user {
                 let user = CString::new(v.as_bytes())?;
