@@ -6,8 +6,7 @@ use hdfs_sys::*;
 use log::debug;
 
 use crate::metadata::Metadata;
-use crate::OpenOptions;
-use crate::Readdir;
+use crate::{OpenOptions, Readdir};
 
 /// Client holds the underlying connection to hdfs clusters.
 ///
@@ -29,7 +28,10 @@ use crate::Readdir;
 /// ```
 /// use hdrs::{Client, ClientBuilder};
 ///
-/// let fs = ClientBuilder::new("default").with_user("default").with_kerberos_ticket_cache_path("/tmp/krb5_111").connect();
+/// let fs = ClientBuilder::new("default")
+///     .with_user("default")
+///     .with_kerberos_ticket_cache_path("/tmp/krb5_111")
+///     .connect();
 /// ```
 #[derive(Debug)]
 pub struct Client {
@@ -41,19 +43,20 @@ pub struct Client {
 /// # Examples
 ///
 /// ```
-/// use hdrs::ClientBuilder;
-/// use hdrs::Client;
+/// use hdrs::{Client, ClientBuilder};
 ///
-/// let fs = ClientBuilder::new("default").with_user("default").with_kerberos_ticket_cache_path("/tmp/krb5_111").connect();
+/// let fs = ClientBuilder::new("default")
+///     .with_user("default")
+///     .with_kerberos_ticket_cache_path("/tmp/krb5_111")
+///     .connect();
 /// ```
 pub struct ClientBuilder {
     name_node: String,
     user: Option<String>,
-    kerberos_ticket_cache_path: Option<String>
+    kerberos_ticket_cache_path: Option<String>,
 }
 
 impl ClientBuilder {
-
     /// Create a ClientBuilder with name node
     ///
     /// Returns an [`hdrs::ClientBuilder`]
@@ -61,17 +64,15 @@ impl ClientBuilder {
     /// # Examples
     ///
     /// ```
-    /// use hdrs::ClientBuilder;
-    /// use hdrs::Client;
+    /// use hdrs::{Client, ClientBuilder};
     ///
     /// let builder = ClientBuilder::new("default");
     /// ```
-    ///
     pub fn new(name_node: &str) -> ClientBuilder {
         ClientBuilder {
             name_node: name_node.to_string(),
             user: None,
-            kerberos_ticket_cache_path: None
+            kerberos_ticket_cache_path: None,
         }
     }
 
@@ -80,15 +81,11 @@ impl ClientBuilder {
     /// # Examples
     ///
     /// ```
-    /// use hdrs::ClientBuilder;
-    /// use hdrs::Client;
+    /// use hdrs::{Client, ClientBuilder};
     ///
-    /// let mut builder = ClientBuilder::new("default");
-    /// builder.with_user("default");
-    /// let client = builder.connect();
+    /// let client = ClientBuilder::new("default").with_user("default").connect();
     /// ```
-    ///
-    pub fn with_user(&mut self, user: &str) -> &mut ClientBuilder {
+    pub fn with_user(mut self, user: &str) -> ClientBuilder {
         self.user = Some(user.to_string());
         self
     }
@@ -98,15 +95,16 @@ impl ClientBuilder {
     /// # Examples
     ///
     /// ```
-    /// use hdrs::ClientBuilder;
-    /// use hdrs::Client;
+    /// use hdrs::{Client, ClientBuilder};
     ///
-    /// let mut builder = ClientBuilder::new("default");
-    /// builder.with_kerberos_ticket_cache_path("/tmp/krb5_1001");
-    /// let client = builder.connect();
+    /// let mut client = ClientBuilder::new("default")
+    ///     .with_kerberos_ticket_cache_path("/tmp/krb5_1001")
+    ///     .connect();
     /// ```
-    ///
-    pub fn with_kerberos_ticket_cache_path(&mut self, kerberos_ticket_cache_path: &str) -> &mut ClientBuilder {
+    pub fn with_kerberos_ticket_cache_path(
+        mut self,
+        kerberos_ticket_cache_path: &str,
+    ) -> ClientBuilder {
         self.kerberos_ticket_cache_path = Some(kerberos_ticket_cache_path.to_string());
         self
     }
@@ -118,15 +116,11 @@ impl ClientBuilder {
     /// # Examples
     ///
     /// ```
-    /// use hdrs::ClientBuilder;
-    /// use hdrs::Client;
+    /// use hdrs::{Client, ClientBuilder};
     ///
-    /// let mut builder = ClientBuilder::new("default");
-    /// builder.with_kerberos_ticket_cache_path("/tmp/krb5_1001");
-    /// let client = builder.connect();
+    /// let mut client = ClientBuilder::new("default").connect();
     /// ```
-    ///
-    pub fn connect(&mut self) -> io::Result<Client> {
+    pub fn connect(self) -> io::Result<Client> {
         prepare_env()?;
         set_errno(Errno(0));
 
@@ -139,7 +133,8 @@ impl ClientBuilder {
             hdfsBuilderSetNameNode(builder, name_node.as_ptr());
 
             if self.kerberos_ticket_cache_path.is_some() {
-                let ticket_cache_path = CString::new(self.kerberos_ticket_cache_path.clone().unwrap())?;
+                let ticket_cache_path =
+                    CString::new(self.kerberos_ticket_cache_path.clone().unwrap())?;
                 hdfsBuilderSetKerbTicketCachePath(builder, ticket_cache_path.as_ptr());
             }
 
@@ -176,7 +171,11 @@ impl Client {
     /// ```
     /// use hdrs::{Client, ClientBuilder};
     ///
-    /// let fs = ClientBuilder::new("default").with_user("default").with_kerberos_ticket_cache_path("/tmp/krb5_111").connect().expect("client connect succeed");
+    /// let fs = ClientBuilder::new("default")
+    ///     .with_user("default")
+    ///     .with_kerberos_ticket_cache_path("/tmp/krb5_111")
+    ///     .connect()
+    ///     .expect("client connect succeed");
     /// let open_options = fs.open_file();
     /// ```
     pub fn open_file(&self) -> OpenOptions {
@@ -190,7 +189,11 @@ impl Client {
     /// ```
     /// use hdrs::{Client, ClientBuilder};
     ///
-    /// let fs = ClientBuilder::new("default").with_user("default").with_kerberos_ticket_cache_path("/tmp/krb5_111").connect().expect("client connect succeed");
+    /// let fs = ClientBuilder::new("default")
+    ///     .with_user("default")
+    ///     .with_kerberos_ticket_cache_path("/tmp/krb5_111")
+    ///     .connect()
+    ///     .expect("client connect succeed");
     /// let _ = fs.remove_file("/tmp/hello.txt");
     /// ```
     pub fn remove_file(&self, path: &str) -> io::Result<()> {
@@ -218,7 +221,11 @@ impl Client {
     /// ```
     /// use hdrs::{Client, ClientBuilder};
     ///
-    /// let fs = ClientBuilder::new("default").with_user("default").with_kerberos_ticket_cache_path("/tmp/krb5_111").connect().expect("client connect succeed");
+    /// let fs = ClientBuilder::new("default")
+    ///     .with_user("default")
+    ///     .with_kerberos_ticket_cache_path("/tmp/krb5_111")
+    ///     .connect()
+    ///     .expect("client connect succeed");
     /// let _ = fs.rename_file("/tmp/hello.txt._COPY_", "/tmp/hello.txt");
     /// ```
     pub fn rename_file(&self, old_path: &str, new_path: &str) -> io::Result<()> {
@@ -245,7 +252,11 @@ impl Client {
     /// ```
     /// use hdrs::{Client, ClientBuilder};
     ///
-    /// let fs = ClientBuilder::new("default").with_user("default").with_kerberos_ticket_cache_path("/tmp/krb5_111").connect().expect("client connect succeed");
+    /// let fs = ClientBuilder::new("default")
+    ///     .with_user("default")
+    ///     .with_kerberos_ticket_cache_path("/tmp/krb5_111")
+    ///     .connect()
+    ///     .expect("client connect succeed");
     /// let _ = fs.remove_dir("/tmp/xxx");
     /// ```
     pub fn remove_dir(&self, path: &str) -> io::Result<()> {
@@ -271,7 +282,11 @@ impl Client {
     /// ```
     /// use hdrs::{Client, ClientBuilder};
     ///
-    /// let fs = ClientBuilder::new("default").with_user("default").with_kerberos_ticket_cache_path("/tmp/krb5_111").connect().expect("client connect succeed");
+    /// let fs = ClientBuilder::new("default")
+    ///     .with_user("default")
+    ///     .with_kerberos_ticket_cache_path("/tmp/krb5_111")
+    ///     .connect()
+    ///     .expect("client connect succeed");
     /// let _ = fs.remove_dir_all("/tmp/xxx/");
     /// ```
     pub fn remove_dir_all(&self, path: &str) -> io::Result<()> {
@@ -299,7 +314,11 @@ impl Client {
     /// ```
     /// use hdrs::{Client, ClientBuilder};
     ///
-    /// let fs = ClientBuilder::new("default").with_user("default").with_kerberos_ticket_cache_path("/tmp/krb5_111").connect().expect("client connect succeed");
+    /// let fs = ClientBuilder::new("default")
+    ///     .with_user("default")
+    ///     .with_kerberos_ticket_cache_path("/tmp/krb5_111")
+    ///     .connect()
+    ///     .expect("client connect succeed");
     /// let fi = fs.metadata("/tmp/hello.txt");
     /// ```
     ///
@@ -310,7 +329,11 @@ impl Client {
     ///
     /// use hdrs::{Client, ClientBuilder};
     ///
-    /// let fs = ClientBuilder::new("default").with_user("default").with_kerberos_ticket_cache_path("/tmp/krb5_111").connect().expect("client connect succeed");
+    /// let fs = ClientBuilder::new("default")
+    ///     .with_user("default")
+    ///     .with_kerberos_ticket_cache_path("/tmp/krb5_111")
+    ///     .connect()
+    ///     .expect("client connect succeed");
     /// let fi = fs.metadata("/tmp/not-exist.txt");
     /// assert!(fi.is_err());
     /// assert_eq!(fi.unwrap_err().kind(), io::ErrorKind::NotFound)
@@ -343,7 +366,11 @@ impl Client {
     /// ```
     /// use hdrs::{Client, ClientBuilder};
     ///
-    /// let fs = ClientBuilder::new("default").with_user("default").with_kerberos_ticket_cache_path("/tmp/krb5_111").connect().expect("client connect succeed");
+    /// let fs = ClientBuilder::new("default")
+    ///     .with_user("default")
+    ///     .with_kerberos_ticket_cache_path("/tmp/krb5_111")
+    ///     .connect()
+    ///     .expect("client connect succeed");
     /// let fis = fs.read_dir("/tmp/hello/");
     /// ```
     pub fn read_dir(&self, path: &str) -> io::Result<Readdir> {
@@ -393,7 +420,11 @@ impl Client {
     /// ```
     /// use hdrs::{Client, ClientBuilder};
     ///
-    /// let fs = ClientBuilder::new("default").with_user("default").with_kerberos_ticket_cache_path("/tmp/krb5_111").connect().expect("client connect succeed");
+    /// let fs = ClientBuilder::new("default")
+    ///     .with_user("default")
+    ///     .with_kerberos_ticket_cache_path("/tmp/krb5_111")
+    ///     .connect()
+    ///     .expect("client connect succeed");
     /// let _ = fs.create_dir("/tmp");
     /// ```
     pub fn create_dir(&self, path: &str) -> io::Result<()> {
@@ -453,13 +484,15 @@ mod tests {
 
     use log::debug;
 
-    use crate::client::{Client, ClientBuilder};
+    use crate::client::ClientBuilder;
 
     #[test]
     fn test_client_connect() {
         let _ = env_logger::try_init();
 
-        let fs = ClientBuilder::new("default").connect().expect("init success");
+        let fs = ClientBuilder::new("default")
+            .connect()
+            .expect("init success");
         assert!(!fs.fs.is_null())
     }
 
@@ -467,7 +500,9 @@ mod tests {
     fn test_client_open() {
         let _ = env_logger::try_init();
 
-        let fs = ClientBuilder::new("default").connect().expect("init success");
+        let fs = ClientBuilder::new("default")
+            .connect()
+            .expect("init success");
 
         let path = uuid::Uuid::new_v4().to_string();
 
@@ -478,7 +513,9 @@ mod tests {
     fn test_client_stat() {
         let _ = env_logger::try_init();
 
-        let fs = ClientBuilder::new("default").connect().expect("init success");
+        let fs = ClientBuilder::new("default")
+            .connect()
+            .expect("init success");
         debug!("Client: {:?}", fs);
 
         let path = uuid::Uuid::new_v4().to_string();
@@ -492,7 +529,9 @@ mod tests {
     fn test_client_readdir() {
         let _ = env_logger::try_init();
 
-        let fs = ClientBuilder::new("default").connect().expect("init success");
+        let fs = ClientBuilder::new("default")
+            .connect()
+            .expect("init success");
         debug!("Client: {:?}", fs);
 
         let f = fs.read_dir("/tmp").expect("open file success");
@@ -504,7 +543,9 @@ mod tests {
     fn test_client_mkdir() {
         let _ = env_logger::try_init();
 
-        let fs = ClientBuilder::new("default").connect().expect("init success");
+        let fs = ClientBuilder::new("default")
+            .connect()
+            .expect("init success");
         debug!("Client: {:?}", fs);
 
         fs.create_dir("/tmp")

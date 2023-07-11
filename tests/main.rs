@@ -1,7 +1,6 @@
 use std::{env, io};
 
 use anyhow::Result;
-use hdrs::Client;
 use hdrs::ClientBuilder;
 use log::debug;
 use rand::{Rng, RngCore};

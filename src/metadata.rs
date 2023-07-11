@@ -159,8 +159,9 @@ impl From<hdfsFileInfo> for Metadata {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use std::ffi::CString;
+
+    use super::*;
 
     #[test]
     fn test_from_hdfs_file_info() -> anyhow::Result<()> {

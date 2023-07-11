@@ -6,12 +6,15 @@
 //! use std::io::{Read, Write};
 //!
 //! use hdrs::Client;
-//!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! use hdrs::ClientBuilder;
 //! let fs = ClientBuilder::new("default").connect()?;
 //!
-//! let mut f = fs.open_file().write(true).create(true).open("/tmp/hello.txt")?;
+//! let mut f = fs
+//!     .open_file()
+//!     .write(true)
+//!     .create(true)
+//!     .open("/tmp/hello.txt")?;
 //! let n = f.write("Hello, World!".as_bytes())?;
 //!
 //! let mut f = fs.open_file().read(true).open("/tmp/hello.txt")?;
@@ -29,8 +32,7 @@
 //! - `tokio-io`: Enable [`tokio::io`](https://docs.rs/tokio/latest/tokio/io/index.html) support for [`File`]
 
 mod client;
-pub use client::Client;
-pub use client::ClientBuilder;
+pub use client::{Client, ClientBuilder};
 
 mod file;
 pub use file::File;
