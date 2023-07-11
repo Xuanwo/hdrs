@@ -1,4 +1,4 @@
-use std::io::{Error, Read, Result, Seek, SeekFrom, Write};
+use std::io::{Error, ErrorKind, Read, Result, Seek, SeekFrom, Write};
 use std::ptr;
 
 use hdfs_sys::*;
@@ -186,12 +186,10 @@ impl Seek for &File {
                 self.inner_seek(offset as i64)?;
                 Ok(offset)
             }
-            SeekFrom::End(n) => {
-                let meta = Client::new(self.fs).metadata(&self.path)?;
-                let offset = meta.len() as i64 + n;
-                self.inner_seek(offset)?;
-                Ok(offset as u64)
-            }
+            SeekFrom::End(_) => Err(Error::new(
+                ErrorKind::Unsupported,
+                "hdfs doesn't support seek from end",
+            )),
         }
     }
 }
