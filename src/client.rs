@@ -129,18 +129,18 @@ impl ClientBuilder {
         let fs = unsafe {
             let builder = hdfsNewBuilder();
 
-            let name_node = CString::new(self.name_node.clone())?;
+            let name_node = CString::new(self.name_node.as_bytes())?;
             hdfsBuilderSetNameNode(builder, name_node.as_ptr());
+            hdfsBuilderSetNameNodePort(builder, 0);
 
-            if self.kerberos_ticket_cache_path.is_some() {
-                let ticket_cache_path =
-                    CString::new(self.kerberos_ticket_cache_path.clone().unwrap())?;
-                hdfsBuilderSetKerbTicketCachePath(builder, ticket_cache_path.as_ptr());
+            if let Some(v) = self.user {
+                let user = CString::new(v.as_bytes())?;
+                hdfsBuilderSetUserName(builder, user.as_ptr());
             }
 
-            if self.user.is_some() {
-                let user = CString::new(self.user.clone().unwrap())?;
-                hdfsBuilderSetUserName(builder, user.as_ptr());
+            if let Some(v) = self.kerberos_ticket_cache_path {
+                let ticket_cache_path = CString::new(v.as_bytes())?;
+                hdfsBuilderSetKerbTicketCachePath(builder, ticket_cache_path.as_ptr());
             }
 
             hdfsBuilderConnect(builder)
