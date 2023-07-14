@@ -50,7 +50,7 @@ Please also make sure `HADOOP_HOME`, `LD_LIBRARY_PATH`, `CLASSPATH` is set corre
 ```shell
 export HADOOP_HOME=/path/to/hadoop
 export LD_LIBRARY_PATH=${JAVA_HOME}/lib/server:${LD_LIBRARY_PATH}
-export CLASSPATH=$(find $HADOOP_HOME -iname "*.jar" | xargs echo | tr ' ' ':')
+export CLASSPATH=$(${HADOOP_HOME}/bin/hadoop classpath --glob)
 ```
 
 ## Version Requirement
