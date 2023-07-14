@@ -45,11 +45,39 @@ jobs:
       - name: Test
         shell: bash
         run: |
-          export CLASSPATH=$(find $HADOOP_HOME -iname "*.jar" | xargs echo | tr ' ' ':')
-          cargo test --all-features -- --nocapture
+          export CLASSPATH=$(${HADOOP_HOME}/bin/hadoop classpath --glob)
+          cargo test --features async_file -- --nocapture
         env:
           HADOOP_HOME: /home/runner/hadoop-3.3.5
           LD_LIBRARY_PATH: ${{ env.JAVA_HOME }}/lib/server:${{ env.HADOOP_HOME}}/lib/native:${{ env.LD_LIBRARY_PATH }}
+          HDRS_TEST: on
+          HDRS_NAMENODE: default
+          HDRS_WORKDIR: /tmp/hdrs/
+
+  test-vendored:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup java env
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: "11"
+      - name: Setup hadoop env
+        shell: bash
+        run: |
+          curl -LsSf https://dlcdn.apache.org/hadoop/common/hadoop-3.3.5/hadoop-3.3.5.tar.gz | tar zxf - -C /home/runner
+
+      - name: Test
+        shell: bash
+        run: |
+          export CLASSPATH=$(${HADOOP_HOME}/bin/hadoop classpath --glob)
+          cargo test --features async_file,vendored -- --nocapture
+        env:
+          HADOOP_HOME: /home/runner/hadoop-3.3.5
+          # If vendored has been enabled, we don't need to load native libs
+          LD_LIBRARY_PATH: ${{ env.JAVA_HOME }}/lib/server:${{ env.LD_LIBRARY_PATH }}
           HDRS_TEST: on
           HDRS_NAMENODE: default
           HDRS_WORKDIR: /tmp/hdrs/
@@ -96,8 +124,8 @@ jobs:
       - name: Test
         shell: bash
         run: |
-          export CLASSPATH=$(find $HADOOP_HOME -iname "*.jar" | xargs echo | tr ' ' ':')
-          cargo test --all-features -- --nocapture
+          export CLASSPATH=$(${HADOOP_HOME}/bin/hadoop classpath --glob)
+          cargo test --features async_file -- --nocapture
         env:
           HADOOP_HOME: /home/runner/hadoop-3.1.3
           LD_LIBRARY_PATH: ${{ env.JAVA_HOME }}/lib/server:${{ env.HADOOP_HOME}}/lib/native:${{ env.LD_LIBRARY_PATH }}
