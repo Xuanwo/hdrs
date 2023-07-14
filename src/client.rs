@@ -184,7 +184,6 @@ impl Client {
     ///
     /// let fs = ClientBuilder::new("default")
     ///     .with_user("default")
-    ///     .with_kerberos_ticket_cache_path("/tmp/krb5_111")
     ///     .connect()
     ///     .expect("client connect succeed");
     /// let open_options = fs.open_file();
@@ -197,7 +196,7 @@ impl Client {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use hdrs::{Client, ClientBuilder};
     ///
     /// let fs = ClientBuilder::new("default")
@@ -228,7 +227,7 @@ impl Client {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use hdrs::{Client, ClientBuilder};
     ///
     /// let fs = ClientBuilder::new("default")
@@ -258,7 +257,7 @@ impl Client {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use hdrs::{Client, ClientBuilder};
     ///
     /// let fs = ClientBuilder::new("default")
@@ -287,7 +286,7 @@ impl Client {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use hdrs::{Client, ClientBuilder};
     ///
     /// let fs = ClientBuilder::new("default")
@@ -318,7 +317,7 @@ impl Client {
     ///
     /// ## Stat a path to file info
     ///
-    /// ```
+    /// ```no_run
     /// use hdrs::{Client, ClientBuilder};
     ///
     /// let fs = ClientBuilder::new("default")
@@ -330,7 +329,7 @@ impl Client {
     ///
     /// ## Stat a non-exist path
     ///
-    /// ```
+    /// ```no_run
     /// use std::io;
     ///
     /// use hdrs::{Client, ClientBuilder};
@@ -368,7 +367,7 @@ impl Client {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use hdrs::{Client, ClientBuilder};
     ///
     /// let fs = ClientBuilder::new("default")
@@ -421,7 +420,7 @@ impl Client {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use hdrs::{Client, ClientBuilder};
     ///
     /// let fs = ClientBuilder::new("default")
