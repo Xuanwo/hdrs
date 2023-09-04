@@ -16,7 +16,7 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Format
         run: cargo fmt --all -- --check
@@ -27,7 +27,7 @@ jobs:
   test-default:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup java env
         uses: actions/setup-java@v3
@@ -54,7 +54,7 @@ jobs:
   test-cluster:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Configure Hdfs
         # namenode will use ports: 9870, 9000, 8020
@@ -105,7 +105,7 @@ jobs:
   test-vendored:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup java env
         uses: actions/setup-java@v3
