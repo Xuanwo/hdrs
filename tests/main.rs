@@ -364,3 +364,26 @@ async fn test_futures_file() -> Result<()> {
 
     Ok(())
 }
+
+#[test]
+fn test_client_with_user() -> Result<()> {
+    let _ = env_logger::try_init();
+
+    dotenv::from_filename(".env").ok();
+    if std::env::var("HDRS_TEST").unwrap_or_default() != "on" {
+        return Ok(());
+    }
+    let name_node = env::var("HDRS_NAMENODE")?;
+    let work_dir = env::var("HDRS_WORKDIR").unwrap_or_default();
+
+    let fs = ClientBuilder::new(&name_node)
+        .with_user("test_user")
+        .connect()?;
+    let test_dir = format!("{}/test_dir", work_dir);
+    let _ = fs.create_dir(&test_dir);
+    let meta = fs.metadata(&test_dir);
+    assert!(meta.is_ok());
+    assert_eq!(meta.unwrap().owner(), "test_user");
+
+    Ok(())
+}
