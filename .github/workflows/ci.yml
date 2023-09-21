@@ -99,6 +99,7 @@ jobs:
         env:
           LD_LIBRARY_PATH: ${{ env.JAVA_HOME }}/lib/server:${{ env.HADOOP_HOME }}/lib/native
           HDRS_TEST: on
+          HDRS_INTEGRATED_TEST: on
           HDRS_NAMENODE: hdfs://localhost:8020
           HDRS_WORKDIR: /tmp/hdrs/
 

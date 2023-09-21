@@ -1,5 +1,6 @@
 use std::ffi::CString;
 use std::io;
+use std::mem::MaybeUninit;
 
 use errno::{set_errno, Errno};
 use hdfs_sys::*;
@@ -138,23 +139,33 @@ impl ClientBuilder {
 
         debug!("connect name node {}", &self.name_node);
 
-        let fs = unsafe {
-            let builder = hdfsNewBuilder();
+        let fs = {
+            let builder = unsafe { hdfsNewBuilder() };
 
             let name_node = CString::new(self.name_node.as_bytes())?;
-            hdfsBuilderSetNameNode(builder, name_node.as_ptr());
+            let mut user = MaybeUninit::uninit();
+            let mut ticket_cache_path = MaybeUninit::uninit();
+
+            unsafe { hdfsBuilderSetNameNode(builder, name_node.as_ptr()) };
 
             if let Some(v) = self.user {
-                let user = CString::new(v.as_bytes())?;
-                hdfsBuilderSetUserName(builder, user.as_ptr());
+                user.write(CString::new(v)?);
+                unsafe {
+                    hdfsBuilderSetUserName(builder, user.assume_init_ref().as_ptr());
+                }
             }
 
             if let Some(v) = self.kerberos_ticket_cache_path {
-                let ticket_cache_path = CString::new(v.as_bytes())?;
-                hdfsBuilderSetKerbTicketCachePath(builder, ticket_cache_path.as_ptr());
+                ticket_cache_path.write(CString::new(v)?);
+                unsafe {
+                    hdfsBuilderSetKerbTicketCachePath(
+                        builder,
+                        ticket_cache_path.assume_init_ref().as_ptr(),
+                    );
+                }
             }
 
-            hdfsBuilderConnect(builder)
+            unsafe { hdfsBuilderConnect(builder) }
         };
 
         if fs.is_null() {
