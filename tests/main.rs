@@ -370,7 +370,7 @@ fn test_client_with_user() -> Result<()> {
     let _ = env_logger::try_init();
 
     dotenv::from_filename(".env").ok();
-    if std::env::var("HDRS_TEST").unwrap_or_default() != "on" {
+    if std::env::var("HDRS_INTEGRATED_TEST").unwrap_or_default() != "on" {
         return Ok(());
     }
     let name_node = env::var("HDRS_NAMENODE")?;
