@@ -406,7 +406,7 @@ impl Client {
 
             return match e.raw_os_error() {
                 None => Ok(Vec::new().into()),
-                Some(code) if code == 0 => Ok(Vec::new().into()),
+                Some(0) => Ok(Vec::new().into()),
                 Some(_) => Err(e),
             };
         }
