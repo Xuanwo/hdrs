@@ -30,7 +30,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup java env
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "11"
@@ -81,7 +81,7 @@ jobs:
           curl --retry 30 --retry-delay 1 --retry-connrefused http://localhost:9870
 
       - name: Setup java env
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "11"
@@ -109,7 +109,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup java env
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "11"
