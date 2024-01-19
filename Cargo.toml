@@ -27,7 +27,7 @@ log = "0.4"
 [dev-dependencies]
 anyhow = "1"
 dotenv = "0.15"
-env_logger = "0.10"
+env_logger = "0.11"
 futures = "0.3"
 rand = "0.8"
 tokio = { version = "1", features = ["full"] }
