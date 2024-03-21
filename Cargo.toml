@@ -7,7 +7,7 @@ edition = "2021"
 license = "Apache-2.0"
 name = "hdrs"
 repository = "https://github.com/Xuanwo/hdrs"
-version = "0.3.1"
+version = "0.3.2"
 
 [package.metadata.docs.rs]
 all-features = true
