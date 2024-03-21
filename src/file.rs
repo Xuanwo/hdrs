@@ -81,6 +81,24 @@ impl File {
 
         Ok(n)
     }
+
+    pub fn read_at(&self, buf: &mut [u8], offset: u64) -> Result<usize> {
+        let n = unsafe {
+            hdfsPread(
+                self.fs,
+                self.f,
+                offset as i64,
+                buf.as_ptr() as *mut c_void,
+                buf.len().min(FILE_LIMIT) as i32,
+            )
+        };
+
+        if n == -1 {
+            return Err(Error::last_os_error());
+        }
+
+        Ok(n as usize)
+    }
 }
 
 impl Read for File {
