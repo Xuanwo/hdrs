@@ -1,4 +1,5 @@
-use std::ffi::CString;
+use std::collections::HashMap;
+use std::ffi::{c_int, CString};
 use std::io;
 use std::mem::MaybeUninit;
 
@@ -54,6 +55,7 @@ pub struct Client {
 pub struct ClientBuilder {
     name_node: String,
     user: Option<String>,
+    configs: HashMap<String, String>,
     kerberos_ticket_cache_path: Option<String>,
 }
 
@@ -86,6 +88,7 @@ impl ClientBuilder {
         ClientBuilder {
             name_node: name_node.to_string(),
             user: None,
+            configs: HashMap::new(),
             kerberos_ticket_cache_path: None,
         }
     }
@@ -101,6 +104,25 @@ impl ClientBuilder {
     /// ```
     pub fn with_user(mut self, user: &str) -> ClientBuilder {
         self.user = Some(user.to_string());
+        self
+    }
+
+    /// Set the configs to override those defined in `hdfs-site.xml` for
+    /// existing ClientBuilder
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// use hdrs::{Client, ClientBuilder};
+    ///
+    /// let client = ClientBuilder::new("default")
+    ///     .with_config("dfs.client.socket-timeout", "1000")
+    ///     .connect();
+    pub fn with_config(mut self, key: &str, value: &str) -> ClientBuilder {
+        self.configs
+            .entry(key.to_string())
+            .and_modify(|e| *e = value.to_string())
+            .or_insert_with(|| value.to_string());
         self
     }
 
@@ -162,6 +184,29 @@ impl ClientBuilder {
                         builder,
                         ticket_cache_path.assume_init_ref().as_ptr(),
                     );
+                }
+            }
+
+            if !self.configs.is_empty() {
+                let mut ret: c_int;
+                let mut key = MaybeUninit::uninit();
+                let mut value = MaybeUninit::uninit();
+
+                for (k, v) in self.configs {
+                    key.write(CString::new(k)?);
+                    value.write(CString::new(v)?);
+
+                    unsafe {
+                        ret = hdfsBuilderConfSetStr(
+                            builder,
+                            key.assume_init_ref().as_ptr(),
+                            value.assume_init_ref().as_ptr(),
+                        )
+                    };
+
+                    if 0 != ret {
+                        return Err(io::Error::last_os_error());
+                    }
                 }
             }
 
@@ -467,6 +512,17 @@ mod tests {
         let _ = env_logger::try_init();
 
         let fs = ClientBuilder::new("default")
+            .connect()
+            .expect("init success");
+        assert!(!fs.fs.is_null())
+    }
+
+    #[test]
+    fn test_client_config() {
+        let _ = env_logger::try_init();
+
+        let fs = ClientBuilder::new("default")
+            .with_config("dfs.client.socket-timeout", "1000")
             .connect()
             .expect("init success");
         assert!(!fs.fs.is_null())
