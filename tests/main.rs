@@ -199,7 +199,7 @@ fn test_file() -> Result<()> {
     Ok(())
 }
 
-#[cfg(feature = "futures-io")]
+#[cfg(feature = "async_file")]
 #[tokio::test]
 async fn test_tokio_file() -> Result<()> {
     use futures::io::*;
@@ -225,7 +225,12 @@ async fn test_tokio_file() -> Result<()> {
     {
         // Write file
         debug!("test file write");
-        let mut f = fs.open_file().create(true).write(true).open(&path)?;
+        let mut f = fs
+            .open_file()
+            .create(true)
+            .write(true)
+            .async_open(&path)
+            .await?;
         f.write_all(&content).await?;
         // Flush file
         debug!("test file flush");
@@ -235,7 +240,7 @@ async fn test_tokio_file() -> Result<()> {
     {
         // Read file
         debug!("test file read");
-        let mut f = fs.open_file().read(true).open(&path)?;
+        let mut f = fs.open_file().read(true).async_open(&path).await?;
         let mut buf = Vec::new();
         let n = f.read_to_end(&mut buf).await?;
         assert_eq!(n, content.len());
@@ -254,7 +259,7 @@ async fn test_tokio_file() -> Result<()> {
     {
         // Seek file.
         debug!("test file seek");
-        let mut f = fs.open_file().read(true).open(&path)?;
+        let mut f = fs.open_file().read(true).async_open(&path).await?;
         let offset = content.len() / 2;
         let size = content.len() - offset;
         let mut buf = Vec::new();
@@ -282,9 +287,10 @@ async fn test_tokio_file() -> Result<()> {
     Ok(())
 }
 
-#[cfg(feature = "tokio-io")]
+#[cfg(feature = "async_file")]
 #[tokio::test]
 async fn test_futures_file() -> Result<()> {
+    use futures::{AsyncReadExt, AsyncSeekExt, AsyncWriteExt};
     use tokio::io::*;
 
     let _ = env_logger::try_init();
@@ -308,7 +314,12 @@ async fn test_futures_file() -> Result<()> {
     {
         // Write file
         debug!("test file write");
-        let mut f = fs.open_file().create(true).write(true).open(&path)?;
+        let mut f = fs
+            .open_file()
+            .create(true)
+            .write(true)
+            .async_open(&path)
+            .await?;
         f.write_all(&content).await?;
         // Flush file
         debug!("test file flush");
@@ -318,7 +329,7 @@ async fn test_futures_file() -> Result<()> {
     {
         // Read file
         debug!("test file read");
-        let mut f = fs.open_file().read(true).open(&path)?;
+        let mut f = fs.open_file().read(true).async_open(&path).await?;
         let mut buf = Vec::new();
         let n = f.read_to_end(&mut buf).await?;
         assert_eq!(n, content.len());
@@ -337,7 +348,7 @@ async fn test_futures_file() -> Result<()> {
     {
         // Seek file.
         debug!("test file seek");
-        let mut f = fs.open_file().read(true).open(&path)?;
+        let mut f = fs.open_file().read(true).async_open(&path).await?;
         let offset = content.len() / 2;
         let size = content.len() - offset;
         let mut buf = Vec::new();
