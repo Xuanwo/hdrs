@@ -1,5 +1,5 @@
-use std::ffi::CString;
-use std::io::{Error, Result};
+use std::ffi::{c_int, c_short, CString};
+use std::io::{Error, ErrorKind, Result};
 
 use hdfs_sys::*;
 use log::debug;
@@ -54,6 +54,9 @@ pub struct OpenOptions {
     truncate: bool,
     create: bool,
     create_new: bool,
+    buffer_size: usize,
+    replication: usize,
+    blocksize: usize,
 }
 
 /// HDFS's client handle is thread safe.
@@ -71,7 +74,40 @@ impl OpenOptions {
             truncate: false,
             create: false,
             create_new: false,
+            buffer_size: 0,
+            replication: 0,
+            blocksize: 0,
         }
+    }
+
+    /// Sets size of buffer for read/write.
+    ///
+    /// Pass `0` if you want to use the default configured values.
+    ///
+    /// `0` by default.
+    pub fn with_buffer_size(&mut self, buffer_size: usize) -> &mut Self {
+        self.buffer_size = buffer_size;
+        self
+    }
+
+    /// Sets block replication.
+    ///
+    /// Pass `0` if you want to use the default configured values.
+    ///
+    /// `0` by default.
+    pub fn with_replication(&mut self, replication: usize) -> &mut Self {
+        self.replication = replication;
+        self
+    }
+
+    /// Sets size of block.
+    ///
+    /// Pass `0` if you want to use the default configured values.
+    ///
+    /// `0` by default.
+    pub fn with_blocksize(&mut self, blocksize: usize) -> &mut Self {
+        self.blocksize = blocksize;
+        self
     }
 
     /// Sets the option for read access.
@@ -304,7 +340,8 @@ impl OpenOptions {
     /// * [`AlreadyExists`]: `create_new` was specified and the file already
     ///   exists.
     /// * [`InvalidInput`]: Invalid combinations of open options (truncate
-    ///   without write access, no access mode set, etc.).
+    ///   without write access, no access mode set, incompatible integer values,
+    ///   etc.).
     ///
     /// The following errors don't match any existing [`io::ErrorKind`] at the moment:
     /// * One of the directory components of the specified file path
@@ -337,8 +374,32 @@ impl OpenOptions {
         debug!("open file {} with flags {}", path, flags);
         let b = unsafe {
             let p = CString::new(path)?;
-            // TODO: we need to support buffer size, replication and block size.
-            hdfsOpenFile(self.fs, p.as_ptr(), flags, 0, 0, 0)
+            let buffer_size: c_int = self.buffer_size.try_into().map_err(|_| {
+                Error::new(
+                    ErrorKind::InvalidInput,
+                    format!("`buffer_size` {} exceeds valid `c_int`", self.buffer_size),
+                )
+            })?;
+            let replication: c_short = self.replication.try_into().map_err(|_| {
+                Error::new(
+                    ErrorKind::InvalidInput,
+                    format!("`replication` {} exceeds valid `c_short`", self.replication),
+                )
+            })?;
+            let blocksize: i32 = self.blocksize.try_into().map_err(|_| {
+                Error::new(
+                    ErrorKind::InvalidInput,
+                    format!("`blocksize` {} exceeds valid `i32`", self.blocksize),
+                )
+            })?;
+            hdfsOpenFile(
+                self.fs,
+                p.as_ptr(),
+                flags,
+                buffer_size,
+                replication,
+                blocksize,
+            )
         };
 
         if b.is_null() {
