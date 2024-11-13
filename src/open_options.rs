@@ -1,4 +1,4 @@
-use std::ffi::CString;
+use std::ffi::{c_int, c_short, CString};
 use std::io::{Error, Result};
 
 use hdfs_sys::*;
@@ -54,6 +54,9 @@ pub struct OpenOptions {
     truncate: bool,
     create: bool,
     create_new: bool,
+    buffer_size: c_int,
+    replication: c_short,
+    blocksize: i32,
 }
 
 /// HDFS's client handle is thread safe.
@@ -71,7 +74,40 @@ impl OpenOptions {
             truncate: false,
             create: false,
             create_new: false,
+            buffer_size: 0,
+            replication: 0,
+            blocksize: 0,
         }
+    }
+
+    /// Sets size of buffer for read/write.
+    ///
+    /// Pass `0` if you want to use the default configured values.
+    ///
+    /// `0` by default.
+    pub fn with_buffer_size(&mut self, buffer_size: c_int) -> &mut Self {
+        self.buffer_size = buffer_size;
+        self
+    }
+
+    /// Sets block replication.
+    ///
+    /// Pass `0` if you want to use the default configured values.
+    ///
+    /// `0` by default.
+    pub fn with_replication(&mut self, replication: c_short) -> &mut Self {
+        self.replication = replication;
+        self
+    }
+
+    /// Sets size of block.
+    ///
+    /// Pass `0` if you want to use the default configured values.
+    ///
+    /// `0` by default.
+    pub fn with_blocksize(&mut self, blocksize: i32) -> &mut Self {
+        self.blocksize = blocksize;
+        self
     }
 
     /// Sets the option for read access.
@@ -337,8 +373,14 @@ impl OpenOptions {
         debug!("open file {} with flags {}", path, flags);
         let b = unsafe {
             let p = CString::new(path)?;
-            // TODO: we need to support buffer size, replication and block size.
-            hdfsOpenFile(self.fs, p.as_ptr(), flags, 0, 0, 0)
+            hdfsOpenFile(
+                self.fs,
+                p.as_ptr(),
+                flags,
+                self.buffer_size,
+                self.replication,
+                self.blocksize,
+            )
         };
 
         if b.is_null() {
