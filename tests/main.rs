@@ -107,6 +107,53 @@ fn test_rename() -> Result<()> {
 }
 
 #[test]
+fn test_copy_file() -> Result<()> {
+    use std::io::{Read, Write};
+
+    dotenv::from_filename(".env").ok();
+
+    if env::var("HDRS_TEST").unwrap_or_default() != "on" {
+        return Ok(());
+    }
+
+    let name_node = env::var("HDRS_NAMENODE")?;
+    let work_dir = env::var("HDRS_WORKDIR").unwrap_or_default();
+
+    let fs = ClientBuilder::new(&name_node).connect()?;
+
+    let src_path = format!("{work_dir}{}", uuid::Uuid::new_v4());
+    let dst_path = format!("{work_dir}{}", uuid::Uuid::new_v4());
+
+    {
+        let mut f = fs.open_file().create(true).write(true).open(&src_path)?;
+        f.write_all(b"test file content")?;
+        f.flush()?;
+    }
+
+    fs.copy_file(&src_path, &dst_path)?;
+
+    {
+        let metadata = fs.metadata(&src_path)?;
+        assert!(metadata.is_file());
+    }
+    {
+        let metadata = fs.metadata(&dst_path)?;
+        assert!(metadata.is_file());
+    }
+    {
+        let mut f = fs.open_file().read(true).open(&dst_path)?;
+        let mut content = String::new();
+        f.read_to_string(&mut content)?;
+        assert_eq!(content.as_str(), "test file content");
+    }
+
+    fs.remove_file(&src_path)?;
+    fs.remove_file(&dst_path)?;
+
+    Ok(())
+}
+
+#[test]
 fn test_file() -> Result<()> {
     use std::io::{Read, Seek, SeekFrom, Write};
 
