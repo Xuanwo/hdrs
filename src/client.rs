@@ -266,7 +266,8 @@ impl Client {
 
     /// Copy a file.
     ///
-    /// **ATTENTION**: the destination directory must exist.
+    /// **ATTENTION**: `dst_path` must be the full path of the destination file,
+    /// and its parent directory must already exist.
     ///
     /// # Examples
     ///
