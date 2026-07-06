@@ -10,6 +10,10 @@ use crate::Client;
 // at most 2^30 bytes, ~1GB
 const FILE_LIMIT: usize = 1073741824;
 
+fn close_log_message(path: &str) -> String {
+    format!("file {path} has been closed")
+}
+
 /// File will hold the underlying pointer to `hdfsFile`.
 ///
 /// The internal file will be closed while `Drop`, so their is no need to close it manually.
@@ -44,7 +48,7 @@ unsafe impl Sync for File {}
 impl Drop for File {
     fn drop(&mut self) {
         unsafe {
-            debug!("file has been closed");
+            debug!("{}", close_log_message(&self.path));
             let _ = hdfsCloseFile(self.fs, self.f);
             // hdfsCloseFile will free self.f no matter success or failed.
             self.f = ptr::null_mut();
@@ -245,6 +249,14 @@ impl Write for &File {
 mod tests {
     use super::*;
     use crate::client::ClientBuilder;
+
+    #[test]
+    fn test_close_log_message_includes_path() {
+        assert_eq!(
+            close_log_message("/tmp/test-file"),
+            "file /tmp/test-file has been closed"
+        );
+    }
 
     #[test]
     fn test_file_build() {
