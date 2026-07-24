@@ -137,7 +137,7 @@ impl ClientBuilder {
     pub fn connect(self) -> io::Result<Client> {
         set_errno(Errno(0));
 
-        debug!("connect name node {}", &self.name_node);
+        debug!("connect name node {}", self.name_node);
 
         let fs = {
             let builder = unsafe { hdfsNewBuilder() };
