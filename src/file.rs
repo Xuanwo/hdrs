@@ -44,7 +44,7 @@ unsafe impl Sync for File {}
 impl Drop for File {
     fn drop(&mut self) {
         unsafe {
-            debug!("file has been closed");
+            debug!("file {} has been closed", self.path);
             let _ = hdfsCloseFile(self.fs, self.f);
             // hdfsCloseFile will free self.f no matter success or failed.
             self.f = ptr::null_mut();
