@@ -55,6 +55,7 @@ pub struct ClientBuilder {
     name_node: String,
     user: Option<String>,
     kerberos_ticket_cache_path: Option<String>,
+    config: Vec<(String, String)>,
 }
 
 impl ClientBuilder {
@@ -87,6 +88,7 @@ impl ClientBuilder {
             name_node: name_node.to_string(),
             user: None,
             kerberos_ticket_cache_path: None,
+            config: Vec::new(),
         }
     }
 
@@ -120,6 +122,26 @@ impl ClientBuilder {
         kerberos_ticket_cache_path: &str,
     ) -> ClientBuilder {
         self.kerberos_ticket_cache_path = Some(kerberos_ticket_cache_path.to_string());
+        self
+    }
+
+    /// Set an arbitrary hadoop Configuration key on the underlying hdfsBuilder
+    /// (`hdfsBuilderConfSetStr`), applied before connect.
+    ///
+    /// Useful when the process has no core-site.xml/hdfs-site.xml on its classpath,
+    /// e.g. to supply HA nameservice definitions programmatically.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use hdrs::{Client, ClientBuilder};
+    ///
+    /// let fs = ClientBuilder::new("hdfs://ns")
+    ///     .with_config("dfs.nameservices", "ns")
+    ///     .connect();
+    /// ```
+    pub fn with_config(mut self, key: &str, value: &str) -> ClientBuilder {
+        self.config.push((key.to_string(), value.to_string()));
         self
     }
 
@@ -162,6 +184,17 @@ impl ClientBuilder {
                         builder,
                         ticket_cache_path.assume_init_ref().as_ptr(),
                     );
+                }
+            }
+
+            let config_pairs = self
+                .config
+                .iter()
+                .map(|(k, v)| Ok((CString::new(k.as_bytes())?, CString::new(v.as_bytes())?)))
+                .collect::<io::Result<Vec<_>>>()?;
+            for (k, v) in &config_pairs {
+                unsafe {
+                    hdfsBuilderConfSetStr(builder, k.as_ptr(), v.as_ptr());
                 }
             }
 
