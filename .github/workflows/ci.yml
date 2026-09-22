@@ -114,8 +114,10 @@ jobs:
         shell: bash
         run: |
           # The namenode image already contains the 3.1.3 client used by this cluster.
+          # That image exports HADOOP_PREFIX, not HADOOP_HOME.
           # archive.apache.org throttles that historical tarball.
-          hadoop_home="$(docker exec namenode printenv HADOOP_HOME)"
+          hadoop_home="$(docker exec namenode sh -c 'if [ -n "$HADOOP_HOME" ]; then printf %s "$HADOOP_HOME"; elif [ -n "$HADOOP_PREFIX" ]; then printf %s "$HADOOP_PREFIX"; else dirname "$(dirname "$(readlink -f /etc/hadoop)")"; fi')"
+          echo "resolved hadoop home: $hadoop_home"
           test -n "$hadoop_home"
           docker exec namenode test -x "$hadoop_home/bin/hadoop"
           version="$(docker exec namenode "$hadoop_home/bin/hadoop" version)"
