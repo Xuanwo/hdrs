@@ -183,6 +183,7 @@ fn test_file() -> Result<()> {
         // Flush file
         debug!("test file flush");
         f.flush()?;
+        f.try_close()?;
     }
 
     {

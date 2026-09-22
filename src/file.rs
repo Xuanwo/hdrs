@@ -3,7 +3,7 @@ use std::ptr;
 
 use hdfs_sys::*;
 use libc::c_void;
-use log::debug;
+use log::{debug, warn};
 
 use crate::Client;
 
@@ -12,7 +12,9 @@ const FILE_LIMIT: usize = 1073741824;
 
 /// File will hold the underlying pointer to `hdfsFile`.
 ///
-/// The internal file will be closed while `Drop`, so their is no need to close it manually.
+/// `Drop` closes the file, but only [`File::try_close`] returns close errors.
+/// After `try_close` fails, the native handle is already released and `Drop`
+/// will not retry the close.
 ///
 /// # Examples
 ///
@@ -43,11 +45,21 @@ unsafe impl Sync for File {}
 
 impl Drop for File {
     fn drop(&mut self) {
+        if self.f.is_null() {
+            return;
+        }
         unsafe {
-            debug!("file {} has been closed", self.path);
-            let _ = hdfsCloseFile(self.fs, self.f);
+            let error_code = hdfsCloseFile(self.fs, self.f);
             // hdfsCloseFile will free self.f no matter success or failed.
             self.f = ptr::null_mut();
+            match error_code {
+                0 => {
+                    debug!("file {} has been closed", self.path);
+                }
+                _ => {
+                    warn!("file {} failed to be closed", self.path);
+                }
+            }
         }
     }
 }
@@ -98,6 +110,22 @@ impl File {
         }
 
         Ok(n as usize)
+    }
+
+    /// Closes the file and returns the `hdfsCloseFile` result.
+    ///
+    /// Call this to observe close errors. On failure the native handle is
+    /// already released, so `Drop` will not retry.
+    pub fn try_close(mut self) -> Result<()> {
+        let error_code = unsafe { hdfsCloseFile(self.fs, self.f) };
+        // hdfsCloseFile will free self.f no matter success or failed.
+        self.f = ptr::null_mut();
+
+        if error_code == 0 {
+            Ok(())
+        } else {
+            Err(Error::last_os_error())
+        }
     }
 }
 
