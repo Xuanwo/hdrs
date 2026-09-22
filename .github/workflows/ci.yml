@@ -113,8 +113,20 @@ jobs:
       - name: Setup hadoop env
         shell: bash
         run: |
-          curl -LsSf https://archive.apache.org/dist/hadoop/common/hadoop-3.1.3/hadoop-3.1.3.tar.gz | tar zxf - -C /home/runner
-          echo "HADOOP_HOME=/home/runner/hadoop-3.1.3" >> $GITHUB_ENV
+          # The namenode image already contains the 3.1.3 client used by this cluster.
+          # archive.apache.org throttles that historical tarball.
+          hadoop_home="$(docker exec namenode printenv HADOOP_HOME)"
+          test -n "$hadoop_home"
+          docker exec namenode test -x "$hadoop_home/bin/hadoop"
+          version="$(docker exec namenode "$hadoop_home/bin/hadoop" version)"
+          printf '%s\n' "$version"
+          printf '%s\n' "$version" | grep -q 'Hadoop 3\.1\.3'
+          docker exec namenode test -d "$hadoop_home/lib/native"
+          rm -rf /home/runner/hadoop-3.1.3
+          docker cp "namenode:${hadoop_home}" /home/runner/hadoop-3.1.3
+          test -x /home/runner/hadoop-3.1.3/bin/hadoop
+          test -d /home/runner/hadoop-3.1.3/lib/native
+          echo "HADOOP_HOME=/home/runner/hadoop-3.1.3" >> "$GITHUB_ENV"
 
       - name: Test
         shell: bash
