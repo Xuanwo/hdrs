@@ -128,6 +128,12 @@ impl ClientBuilder {
     /// Set an arbitrary hadoop Configuration key on the underlying hdfsBuilder
     /// (`hdfsBuilderConfSetStr`), applied before connect.
     ///
+    /// Later calls override earlier calls for the same key. Distinct keys are all
+    /// applied.
+    ///
+    /// Connect uses Hadoop's cached `FileSystem` for the target URI. A later
+    /// connect does not guarantee that these keys are applied again.
+    ///
     /// Useful when the process has no core-site.xml/hdfs-site.xml on its classpath,
     /// e.g. to supply HA nameservice definitions programmatically.
     ///
@@ -192,7 +198,10 @@ impl ClientBuilder {
                 .iter()
                 .map(|(k, v)| Ok((CString::new(k.as_bytes())?, CString::new(v.as_bytes())?)))
                 .collect::<io::Result<Vec<_>>>()?;
-            for (k, v) in &config_pairs {
+            // libhdfs prepends each option and Configuration.set keeps the last
+            // write, so walk the recorded pairs backwards. The last with_config
+            // for a key is then the last value applied.
+            for (k, v) in config_pairs.iter().rev() {
                 unsafe {
                     hdfsBuilderConfSetStr(builder, k.as_ptr(), v.as_ptr());
                 }
