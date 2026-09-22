@@ -12,7 +12,9 @@ const FILE_LIMIT: usize = 1073741824;
 
 /// File will hold the underlying pointer to `hdfsFile`.
 ///
-/// The internal file will be closed while `Drop`, so their is no need to close it manually.
+/// `Drop` closes the file, but only [`File::try_close`] returns close errors.
+/// After `try_close` fails, the native handle is already released and `Drop`
+/// will not retry the close.
 ///
 /// # Examples
 ///
@@ -52,10 +54,10 @@ impl Drop for File {
             self.f = ptr::null_mut();
             match error_code {
                 0 => {
-                    debug!("file has been closed");
+                    debug!("file {} has been closed", self.path);
                 }
                 _ => {
-                    warn!("file failed to be closed")
+                    warn!("file {} failed to be closed", self.path);
                 }
             }
         }
@@ -110,6 +112,10 @@ impl File {
         Ok(n as usize)
     }
 
+    /// Closes the file and returns the `hdfsCloseFile` result.
+    ///
+    /// Call this to observe close errors. On failure the native handle is
+    /// already released, so `Drop` will not retry.
     pub fn try_close(mut self) -> Result<()> {
         let error_code = unsafe { hdfsCloseFile(self.fs, self.f) };
         // hdfsCloseFile will free self.f no matter success or failed.

@@ -137,7 +137,7 @@ impl ClientBuilder {
     pub fn connect(self) -> io::Result<Client> {
         set_errno(Errno(0));
 
-        debug!("connect name node {}", &self.name_node);
+        debug!("connect name node {}", self.name_node);
 
         let fs = {
             let builder = unsafe { hdfsNewBuilder() };
@@ -261,6 +261,39 @@ impl Client {
         }
 
         debug!("rename file {} -> {} finished", old_path, new_path);
+        Ok(())
+    }
+
+    /// Copy a file.
+    ///
+    /// **ATTENTION**: `dst_path` must be the full path of the destination file,
+    /// and its parent directory must already exist.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use hdrs::{Client, ClientBuilder};
+    ///
+    /// let fs = ClientBuilder::new("default")
+    ///     .with_user("default")
+    ///     .connect()
+    ///     .expect("client connect succeed");
+    /// let _ = fs.copy_file("/tmp/hello.txt", "/tmp/hello-copy.txt");
+    /// ```
+    pub fn copy_file(&self, src_path: &str, dst_path: &str) -> io::Result<()> {
+        debug!("copy file {} -> {}", src_path, dst_path);
+
+        let n = {
+            let src_path = CString::new(src_path)?;
+            let dst_path = CString::new(dst_path)?;
+            unsafe { hdfsCopy(self.fs, src_path.as_ptr(), self.fs, dst_path.as_ptr()) }
+        };
+
+        if n == -1 {
+            return Err(io::Error::last_os_error());
+        }
+
+        debug!("copy file {} -> {} finished", src_path, dst_path);
         Ok(())
     }
 
