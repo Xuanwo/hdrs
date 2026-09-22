@@ -21,7 +21,7 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup java env
         uses: actions/setup-java@v4
@@ -38,7 +38,7 @@ jobs:
   package:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup java env
         uses: actions/setup-java@v4
@@ -52,7 +52,7 @@ jobs:
   test-default:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup java env
         uses: actions/setup-java@v4
@@ -79,7 +79,7 @@ jobs:
   test-cluster:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Configure Hdfs
         # namenode will use ports: 9870, 9000, 8020
@@ -145,7 +145,7 @@ jobs:
   test-vendored:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup java env
         uses: actions/setup-java@v4
