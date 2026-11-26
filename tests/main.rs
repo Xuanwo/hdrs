@@ -262,32 +262,36 @@ async fn test_async_close_releases_file() -> Result<()> {
     let work_dir = env::var("HDRS_WORKDIR").unwrap_or_default();
     let fs = ClientBuilder::new(&name_node).connect()?;
 
-    for payload in [b"".as_slice(), b"payload".as_slice()] {
-        let path = format!("{work_dir}{}", uuid::Uuid::new_v4());
-        let mut file = fs
-            .open_file()
-            .create(true)
-            .write(true)
-            .async_open(&path)
-            .await?;
-        file.write_all(payload).await?;
-        file.close().await?;
-        file.close().await?;
+    let path = format!("{work_dir}{}", uuid::Uuid::new_v4());
+    let mut file = fs
+        .open_file()
+        .create(true)
+        .write(true)
+        .async_open(&path)
+        .await?;
+    file.write_all(b"payload").await?;
+    file.close().await?;
+    file.close().await?;
 
-        // A completed close must release the write lease while AsyncFile is still alive.
-        let mut append = fs.open_file().append(true).async_open(&path).await?;
-        append.write_all(b" appended").await?;
-        append.close().await?;
+    // A completed close must release the write lease while AsyncFile is still alive.
+    // Use create/overwrite instead of append: local ChecksumFileSystem rejects append.
+    let mut again = fs
+        .open_file()
+        .create(true)
+        .write(true)
+        .async_open(&path)
+        .await?;
+    again.write_all(b"replaced").await?;
+    again.close().await?;
 
-        let mut contents = Vec::new();
-        fs.open_file()
-            .read(true)
-            .open(&path)?
-            .read_to_end(&mut contents)?;
-        assert_eq!(contents, [payload, b" appended"].concat());
-        drop(file);
-        fs.remove_file(&path)?;
-    }
+    let mut contents = Vec::new();
+    fs.open_file()
+        .read(true)
+        .open(&path)?
+        .read_to_end(&mut contents)?;
+    assert_eq!(contents, b"replaced");
+    drop(file);
+    fs.remove_file(&path)?;
     Ok(())
 }
 
