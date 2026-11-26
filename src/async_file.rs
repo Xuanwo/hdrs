@@ -227,6 +227,20 @@ mod tests {
         }
     }
 
+    /// `Unblock` may split one logical write into multiple `Write::write` calls.
+    fn assert_write_flush_close(events: &[&str]) {
+        let flush = events.iter().rposition(|e| *e == "flush").expect("flush");
+        assert!(
+            events[..flush].iter().all(|e| *e == "write") && !events[..flush].is_empty(),
+            "expected one or more writes before flush, got {events:?}"
+        );
+        assert_eq!(
+            &events[flush..],
+            &["flush", "close"][..],
+            "expected flush then close, got {events:?}"
+        );
+    }
+
     #[tokio::test]
     async fn test_close_drains_writes_before_native_close() {
         let events = Arc::new(StdMutex::new(Vec::new()));
@@ -246,7 +260,7 @@ mod tests {
         .await
         .unwrap();
 
-        assert_eq!(*events.lock().unwrap(), ["write", "flush", "close"]);
+        assert_write_flush_close(&events.lock().unwrap());
     }
 
     #[tokio::test]
@@ -277,7 +291,7 @@ mod tests {
             .unwrap_err();
 
             assert_eq!(err.raw_os_error(), Some(expected));
-            assert_eq!(*events.lock().unwrap(), ["write", "flush", "close"]);
+            assert_write_flush_close(&events.lock().unwrap());
         }
     }
 
