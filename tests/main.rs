@@ -249,6 +249,50 @@ fn test_file() -> Result<()> {
 
 #[cfg(feature = "async_file")]
 #[tokio::test]
+async fn test_async_close_releases_file() -> Result<()> {
+    use futures::AsyncWriteExt;
+    use std::io::Read;
+
+    dotenv::from_filename(".env").ok();
+    if env::var("HDRS_TEST").unwrap_or_default() != "on" {
+        return Ok(());
+    }
+
+    let name_node = env::var("HDRS_NAMENODE")?;
+    let work_dir = env::var("HDRS_WORKDIR").unwrap_or_default();
+    let fs = ClientBuilder::new(&name_node).connect()?;
+
+    for payload in [b"".as_slice(), b"payload".as_slice()] {
+        let path = format!("{work_dir}{}", uuid::Uuid::new_v4());
+        let mut file = fs
+            .open_file()
+            .create(true)
+            .write(true)
+            .async_open(&path)
+            .await?;
+        file.write_all(payload).await?;
+        file.close().await?;
+        file.close().await?;
+
+        // A completed close must release the write lease while AsyncFile is still alive.
+        let mut append = fs.open_file().append(true).async_open(&path).await?;
+        append.write_all(b" appended").await?;
+        append.close().await?;
+
+        let mut contents = Vec::new();
+        fs.open_file()
+            .read(true)
+            .open(&path)?
+            .read_to_end(&mut contents)?;
+        assert_eq!(contents, [payload, b" appended"].concat());
+        drop(file);
+        fs.remove_file(&path)?;
+    }
+    Ok(())
+}
+
+#[cfg(feature = "async_file")]
+#[tokio::test]
 async fn test_tokio_file() -> Result<()> {
     use futures::io::*;
 
