@@ -203,16 +203,23 @@ mod tests {
 
     struct TestWriter {
         events: Arc<StdMutex<Vec<&'static str>>>,
+        written: Arc<StdMutex<Vec<u8>>>,
         fail_write: bool,
         fail_flush: bool,
     }
 
     impl Write for TestWriter {
         fn write(&mut self, buf: &[u8]) -> Result<usize> {
+            // piper::Reader::drain_inner ends a drain by calling write(&[]).
+            // That is not application payload; only record non-empty writes.
+            if buf.is_empty() {
+                return Ok(0);
+            }
             self.events.lock().unwrap().push("write");
             if self.fail_write {
                 Err(Error::from_raw_os_error(libc::EACCES))
             } else {
+                self.written.lock().unwrap().extend_from_slice(buf);
                 Ok(buf.len())
             }
         }
@@ -227,25 +234,13 @@ mod tests {
         }
     }
 
-    /// `Unblock` may split one logical write into multiple `Write::write` calls.
-    fn assert_write_flush_close(events: &[&str]) {
-        let flush = events.iter().rposition(|e| *e == "flush").expect("flush");
-        assert!(
-            events[..flush].iter().all(|e| *e == "write") && !events[..flush].is_empty(),
-            "expected one or more writes before flush, got {events:?}"
-        );
-        assert_eq!(
-            &events[flush..],
-            &["flush", "close"][..],
-            "expected flush then close, got {events:?}"
-        );
-    }
-
     #[tokio::test]
     async fn test_close_drains_writes_before_native_close() {
         let events = Arc::new(StdMutex::new(Vec::new()));
+        let written = Arc::new(StdMutex::new(Vec::new()));
         let mut io = Unblock::new(TestWriter {
             events: Arc::clone(&events),
+            written: Arc::clone(&written),
             fail_write: false,
             fail_flush: false,
         });
@@ -260,7 +255,9 @@ mod tests {
         .await
         .unwrap();
 
-        assert_write_flush_close(&events.lock().unwrap());
+        // Bytes must be drained exactly once before flush/close; no duplication from close_io.
+        assert_eq!(*written.lock().unwrap(), b"payload");
+        assert_eq!(*events.lock().unwrap(), ["write", "flush", "close"]);
     }
 
     #[tokio::test]
@@ -272,8 +269,10 @@ mod tests {
             (true, false, true, libc::EACCES),
         ] {
             let events = Arc::new(StdMutex::new(Vec::new()));
+            let written = Arc::new(StdMutex::new(Vec::new()));
             let mut io = Unblock::new(TestWriter {
                 events: Arc::clone(&events),
+                written: Arc::clone(&written),
                 fail_write,
                 fail_flush,
             });
@@ -291,7 +290,12 @@ mod tests {
             .unwrap_err();
 
             assert_eq!(err.raw_os_error(), Some(expected));
-            assert_write_flush_close(&events.lock().unwrap());
+            if fail_write {
+                assert!(written.lock().unwrap().is_empty());
+            } else {
+                assert_eq!(*written.lock().unwrap(), b"payload");
+            }
+            assert_eq!(*events.lock().unwrap(), ["write", "flush", "close"]);
         }
     }
 
